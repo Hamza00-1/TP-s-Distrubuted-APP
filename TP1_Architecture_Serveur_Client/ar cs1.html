@@ -1,0 +1,2065 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Séance 5 — Concepts des Systèmes Distribués (Python)</title>
+<style>
+  :root {
+    --primary: #1a73e8;
+    --primary-dark: #0d47a1;
+    --secondary: #34a853;
+    --warning: #f9ab00;
+    --danger: #ea4335;
+    --security: #7b1fa2;
+    --bg: #f8f9fa;
+    --card-bg: #ffffff;
+    --text: #202124;
+    --text-light: #5f6368;
+    --border: #dadce0;
+    --code-bg: #f1f3f4;
+    --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary), #4fc3f7);
+    color: #fff;
+    padding: 40px 30px;
+    border-radius: 0 0 var(--radius) var(--radius);
+    margin-bottom: 30px;
+  }
+  header h1 { font-size: 2em; margin-bottom: 10px; }
+  header .subtitle { font-size: 1.1em; opacity: 0.92; margin-bottom: 18px; }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .meta-item {
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.95em;
+  }
+  .meta-item strong { display: block; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; margin-bottom: 2px; }
+
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.78em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 2px 3px;
+    vertical-align: middle;
+  }
+  .badge-arch { background: #e8f0fe; color: var(--primary); }
+  .badge-risk { background: #fce8e6; color: var(--danger); }
+  .badge-zt { background: #f3e5f5; color: var(--security); }
+  .badge-tp { background: #e6f4ea; color: var(--secondary); }
+  .badge-time { background: #fff3e0; color: #e65100; }
+
+  /* SECTIONS */
+  section { margin-bottom: 35px; }
+  h2 {
+    font-size: 1.55em;
+    color: var(--primary-dark);
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    margin-top: 10px;
+  }
+  h3 {
+    font-size: 1.25em;
+    color: var(--primary);
+    margin: 22px 0 10px 0;
+  }
+  h4 {
+    font-size: 1.08em;
+    color: #333;
+    margin: 16px 0 8px 0;
+  }
+  p { margin-bottom: 12px; }
+  ul, ol { margin: 8px 0 14px 24px; }
+  li { margin-bottom: 5px; }
+
+  /* CARDS */
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    padding: 22px 26px;
+    margin-bottom: 20px;
+    border-left: 5px solid var(--primary);
+  }
+  .card.warn { border-left-color: var(--warning); background: #fffde7; }
+  .card.danger { border-left-color: var(--danger); background: #fef7f6; }
+  .card.security { border-left-color: var(--security); background: #faf5fc; }
+  .card.info { border-left-color: var(--primary); background: #eef5fd; }
+  .card.success { border-left-color: var(--secondary); background: #f1f9f3; }
+  .card-title {
+    font-weight: 700;
+    font-size: 1em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card.warn .card-title { color: #e65100; }
+  .card.danger .card-title { color: var(--danger); }
+  .card.security .card-title { color: var(--security); }
+  .card.info .card-title { color: var(--primary); }
+  .card.success .card-title { color: var(--secondary); }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 20px 0;
+    font-size: 0.93em;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  th {
+    background: var(--primary);
+    color: #fff;
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f8f9fb; }
+  tr:hover td { background: #e8f0fe; }
+
+  /* CODE */
+  pre {
+    background: #263238;
+    color: #eeffff;
+    padding: 18px 22px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.9em;
+    line-height: 1.6;
+    margin: 12px 0 18px 0;
+    position: relative;
+  }
+  pre .comment { color: #546e7a; }
+  pre .keyword { color: #c792ea; }
+  pre .string { color: #c3e88d; }
+  pre .function { color: #82aaff; }
+  pre .number { color: #f78c6c; }
+  pre .decorator { color: #ffcb6b; }
+  code {
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.92em;
+  }
+  pre code { background: none; padding: 0; }
+  .code-label {
+    position: absolute;
+    top: 6px;
+    right: 12px;
+    font-size: 0.72em;
+    color: #78909c;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* TIMELINE */
+  .timeline {
+    display: grid;
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 16px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border-left: 4px solid var(--primary);
+    align-items: start;
+  }
+  .timeline-time {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.95em;
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+  .timeline-content h4 { margin-top: 0; }
+
+  /* SVG */
+  .figure-container {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+  .figure-container svg { max-width: 100%; height: auto; }
+  .figure-caption {
+    font-size: 0.88em;
+    color: var(--text-light);
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* QUIZ */
+  .quiz-item {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border-left: 4px solid var(--warning);
+  }
+  .quiz-item .question { font-weight: 600; margin-bottom: 8px; }
+  .quiz-item .options { margin-left: 16px; }
+  .quiz-item .options label { display: block; margin: 4px 0; cursor: pointer; }
+  .correction {
+    display: none;
+    background: #e8f5e9;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-size: 0.92em;
+    border-left: 3px solid var(--secondary);
+  }
+  .quiz-item:hover .correction,
+  .quiz-item:focus-within .correction { display: block; }
+  .show-all .correction { display: block !important; }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; margin-left: 0; padding-left: 0; }
+  .checklist li {
+    padding: 6px 0 6px 30px;
+    position: relative;
+  }
+  .checklist li::before {
+    content: "☐";
+    position: absolute;
+    left: 4px;
+    top: 6px;
+    font-size: 1.1em;
+  }
+
+  /* PRINT */
+  @media print {
+    body { font-size: 11pt; }
+    header { background: #1a73e8 !important; -webkit-print-color-adjust: exact; }
+    pre { font-size: 9pt; }
+    .card, .quiz-item, .timeline-item { break-inside: avoid; }
+    .correction { display: block !important; }
+  }
+  @media (max-width: 700px) {
+    .container { padding: 10px; }
+    header { padding: 24px 16px; }
+    header h1 { font-size: 1.4em; }
+    .meta-grid { grid-template-columns: 1fr; }
+    .timeline-item { grid-template-columns: 1fr; }
+    .timeline-time { margin-bottom: 4px; }
+    table { font-size: 0.82em; }
+    pre { font-size: 0.82em; padding: 12px; }
+  }
+  .ascii-art {
+    background: #fff;
+    color: #333;
+    border: 1px solid var(--border);
+    font-size: 0.85em;
+    line-height: 1.4;
+  }
+  .toc { background: #fff; border-radius: var(--radius); padding: 20px 28px; margin-bottom: 30px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .toc h3 { margin-top: 0; color: var(--primary-dark); }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc > ul > li { margin-bottom: 4px; }
+  .toc ul ul { padding-left: 20px; }
+  .toc li::before { content: "▸ "; color: var(--primary); font-weight: bold; }
+  .highlight { background: linear-gradient(120deg, #fef08a 0%, #fef9c3 100%); padding: 2px 4px; border-radius: 3px; }
+  .separator { border: none; border-top: 2px dashed var(--border); margin: 30px 0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- HEADER                                                        -->
+<!-- ============================================================ -->
+<header>
+  <h1>Séance 5 — Concepts des Systèmes Distribués (Python)</h1>
+  <div class="subtitle">Module : Applications Réparties et Cybersécurité</div>
+  <div class="meta-grid">
+    <div class="meta-item">
+      <strong>Durée</strong>
+      4 h (240 min)
+    </div>
+    <div class="meta-item">
+      <strong>Public</strong>
+      Étudiants ingénieur / licence avancée
+    </div>
+    <div class="meta-item">
+      <strong>Pré-requis</strong>
+      Python, notions réseau (IP/ports), JSON, bases sécurité (auth, chiffrement)
+    </div>
+    <div class="meta-item">
+      <strong>Tags</strong>
+      <span class="badge badge-arch">Architecture</span>
+      <span class="badge badge-risk">Risques</span>
+      <span class="badge badge-zt">Zero Trust</span>
+      <span class="badge badge-tp">TP</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<!-- TABLE DES MATIÈRES                                            -->
+<!-- ============================================================ -->
+<div class="toc">
+  <h3>Table des matières</h3>
+  <ul>
+    <li>Objectifs de la séance</li>
+    <li>Déroulement détaillé (240 min)</li>
+    <li>Cours — Définition &amp; propriétés clés
+      <ul>
+        <li>Distribution vs parallélisme vs concurrence</li>
+        <li>Absence d'horloge globale</li>
+        <li>Pannes partielles</li>
+        <li>Latence, jitter, partitions réseau</li>
+        <li>Transparence</li>
+      </ul>
+    </li>
+    <li>Cours — Avantages &amp; défis
+      <ul>
+        <li>Scalabilité, résilience, modularité</li>
+        <li>Théorème CAP</li>
+        <li>Modèles de cohérence</li>
+      </ul>
+    </li>
+    <li>Cours — Modèles d'architecture (+ figures)
+      <ul>
+        <li>Client–Serveur</li>
+        <li>Peer-to-Peer</li>
+        <li>Microservices</li>
+        <li>Tableau comparatif</li>
+      </ul>
+    </li>
+    <li>Cours — Communication entre composants</li>
+    <li>Cours — Implications cybersécurité</li>
+    <li>Live Coding Python (mini-exemples)</li>
+    <li>TP Guidé (90 min) — Projet fil rouge
+      <ul>
+        <li>TP5.1 — Schématisation d'architecture</li>
+        <li>TP5.2 — Analyse défis distribués</li>
+        <li>TP5.3 — Cartographie surfaces d'attaque</li>
+      </ul>
+    </li>
+    <li>Lab Sécurité (30 min)</li>
+    <li>Synthèse — À retenir en 10 points</li>
+    <li>Mini-quiz (10 questions) + Corrigé</li>
+    <li>Livrables &amp; Critères d'évaluation</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- OBJECTIFS                                                      -->
+<!-- ============================================================ -->
+<section id="objectifs">
+  <h2>🎯 Objectifs de la séance</h2>
+  <div class="card info">
+    <div class="card-title">À l'issue de cette séance, l'étudiant sera capable de :</div>
+    <ul>
+      <li><strong>Comprendre</strong> la définition et les caractéristiques fondamentales des systèmes distribués (absence d'horloge globale, pannes partielles, latence variable, transparence).</li>
+      <li><strong>Identifier</strong> les avantages et les défis : cohérence, tolérance aux pannes, latence, complexité opérationnelle, observabilité.</li>
+      <li><strong>Distinguer</strong> les modèles d'architecture : client-serveur, peer-to-peer, microservices — et savoir argumenter le choix de l'un par rapport à l'autre.</li>
+      <li><strong>Analyser</strong> les implications sécurité : surface d'attaque étendue, principes Zero Trust, attaques distribuées (DDoS, MITM, SSRF…), sécurité « by design ».</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- DÉROULEMENT                                                    -->
+<!-- ============================================================ -->
+<section id="deroulement">
+  <h2>⏱ Déroulement détaillé (240 min)</h2>
+  <div class="timeline">
+
+    <div class="timeline-item">
+      <div class="timeline-time"><span class="badge badge-time">15 min</span></div>
+      <div class="timeline-content">
+        <h4>Warm-up &amp; révisions</h4>
+        <p>Rappels sur les limites du monolithique (SPOF, couplage fort, déploiement « tout ou rien »). Révision rapide : concurrence, ressources partagées, race conditions rencontrées en Séance 4. Question ouverte : « Pourquoi ne pas tout mettre dans un seul programme ? »</p>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-time"><span class="badge badge-time">90 min</span></div>
+      <div class="timeline-content">
+        <h4>Cours interactif + Live Coding Python</h4>
+        <p>Définitions, propriétés clés, théorème CAP, modèles d'architecture, communication inter-composants, implications cybersécurité. Petits exemples Python exécutables en direct.</p>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-time"><span class="badge badge-time">90 min</span></div>
+      <div class="timeline-content">
+        <h4>TP Guidé — Projet fil rouge</h4>
+        <p>Architecture distribuée pour un « Système de Gestion Documentaire Distribué ». Trois sous-parties : schématisation, analyse des défis, cartographie sécurité.</p>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-time"><span class="badge badge-time">30 min</span></div>
+      <div class="timeline-content">
+        <h4>Lab Sécurité</h4>
+        <p>Threat modeling léger, checklist Zero Trust, scénario « compromission d'un microservice ».</p>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-time"><span class="badge badge-time">15 min</span></div>
+      <div class="timeline-content">
+        <h4>Synthèse &amp; perspectives</h4>
+        <p>Résumé en 10 points, mini-quiz, annonce de la Séance 6 (communication avancée : files de messages, gRPC, pub/sub).</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="separator">
+
+<!-- ============================================================ -->
+<!-- COURS A) DÉFINITION & PROPRIÉTÉS CLÉS                         -->
+<!-- ============================================================ -->
+<section id="cours-definition">
+  <h2>A) Définition &amp; propriétés clés <span class="badge badge-arch">Architecture</span></h2>
+
+  <h3>Qu'est-ce qu'un système distribué ?</h3>
+  <div class="card info">
+    <div class="card-title">📘 Définition formelle</div>
+    <p>Un <strong>système distribué</strong> est un ensemble de composants logiciels (processus, services) s'exécutant sur <strong>plusieurs machines</strong> reliées par un réseau, qui <strong>coordonnent leurs actions par échange de messages</strong> et apparaissent à l'utilisateur final comme un <strong>système unique et cohérent</strong>.</p>
+    <p><em>— Adapté de Andrew Tanenbaum, « Distributed Systems: Principles and Paradigms »</em></p>
+  </div>
+
+  <p>Cette définition met en lumière trois idées fondamentales :</p>
+  <ul>
+    <li><strong>Multiplicité physique</strong> : les composants tournent sur des machines distinctes (ou dans des conteneurs/VMs distincts).</li>
+    <li><strong>Communication par messages</strong> : pas de mémoire partagée directe entre machines ; tout passe par le réseau (HTTP, TCP, UDP, etc.).</li>
+    <li><strong>Illusion d'unité</strong> : l'utilisateur ou le développeur « haut niveau » voit un seul service, même si 50 microservices collaborent en coulisses.</li>
+  </ul>
+
+  <h3>Distribution vs Parallélisme vs Concurrence</h3>
+  <p>Ces trois notions sont souvent confondues. Clarifions :</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Concept</th>
+        <th>Définition</th>
+        <th>Mémoire</th>
+        <th>Exemple typique</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Concurrence</strong></td>
+        <td>Plusieurs tâches progressent « en même temps » (pas forcément simultanément, mais entrelacées)</td>
+        <td>Partagée (même processus / même machine)</td>
+        <td>Threads Python avec <code>threading</code>, coroutines <code>asyncio</code></td>
+      </tr>
+      <tr>
+        <td><strong>Parallélisme</strong></td>
+        <td>Exécution réellement simultanée sur plusieurs cœurs / processeurs</td>
+        <td>Partagée ou locale (même machine)</td>
+        <td><code>multiprocessing</code> Python, GPU computing</td>
+      </tr>
+      <tr>
+        <td><strong>Distribution</strong></td>
+        <td>Composants sur <strong>machines différentes</strong>, communication par réseau</td>
+        <td>Pas de mémoire partagée — messages uniquement</td>
+        <td>Microservices, bases de données répliquées, CDN</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="card warn">
+    <div class="card-title">⚠️ Piège classique</div>
+    <p>La distribution n'implique pas le parallélisme et inversement. On peut avoir un système distribué dont chaque nœud est mono-thread, et un système parallèle (GPU) qui n'est pas du tout distribué. En revanche, un système distribué est <strong>nécessairement</strong> concurrent : plusieurs composants progressent en même temps.</p>
+  </div>
+
+  <h3>Absence d'horloge globale</h3>
+  <p>Dans un programme monolithique, toutes les instructions partagent la même horloge système. En distribué, chaque machine a <strong>sa propre horloge</strong>, et ces horloges dérivent les unes par rapport aux autres (quelques millisecondes à quelques secondes).</p>
+
+  <p><strong>Conséquence pratique :</strong> Si le service A envoie un message au service B, et que B le traite, les timestamps de A et B ne sont pas comparables directement. L'événement « envoi » peut avoir un timestamp <em>postérieur</em> à « réception » si l'horloge de A est en avance.</p>
+
+  <div class="card info">
+    <div class="card-title">💡 Exemple concret</div>
+    <p>Imaginez deux bureaux de poste dans deux villes. Chaque bureau tamponne les lettres avec <em>sa</em> pendule murale. Si la pendule de Lyon avance de 3 minutes sur celle de Paris, une lettre tamponnée « 14h00 à Lyon » et reçue « 13h58 à Paris » semble avoir été reçue <em>avant</em> d'avoir été envoyée. C'est exactement ce qui arrive dans les systèmes distribués.</p>
+  </div>
+
+  <p>Les solutions incluent :</p>
+  <ul>
+    <li><strong>NTP (Network Time Protocol)</strong> : synchronisation approximative (erreur ~ms).</li>
+    <li><strong>Horloges logiques de Lamport</strong> : compteurs incrémentiels qui capturent la <em>causalité</em> sans se soucier du temps réel.</li>
+    <li><strong>Horloges vectorielles</strong> : extension permettant de détecter la concurrence entre événements.</li>
+  </ul>
+
+  <h3>Pannes partielles</h3>
+  <p>Dans un monolithe, quand le processus plante, <strong>tout</strong> s'arrête. C'est brutal mais simple. En distribué, un composant peut tomber <strong>indépendamment</strong> des autres. C'est la notion de <strong>panne partielle</strong> (partial failure).</p>
+
+  <p>Pourquoi c'est fondamentalement différent d'un crash global ?</p>
+  <ul>
+    <li><strong>Ambiguïté</strong> : si le service B ne répond pas, A ne sait pas si B est mort, lent, ou si le réseau entre A et B est coupé. C'est le « problème des deux généraux ».</li>
+    <li><strong>État incohérent</strong> : A a peut-être modifié ses données avant d'appeler B. Si B échoue, A est dans un état « à moitié fait ».</li>
+    <li><strong>Propagation en cascade</strong> : si C dépend de B qui dépend de A, la panne de A peut « remonter » et tout faire tomber — sauf si on a des mécanismes de protection (circuit breakers, fallbacks).</li>
+  </ul>
+
+  <div class="card danger">
+    <div class="card-title">🔥 Piège classique</div>
+    <p>« Mon service marche en local, donc il marchera en production. » Non ! En local, le réseau est localhost (latence ~0, pas de perte). En production, le réseau peut perdre des paquets, dupliquer des messages, réordonner, ou simplement être lent. Le réseau n'est <strong>pas</strong> fiable — c'est le premier des « 8 mythes des systèmes distribués » (Peter Deutsch, 1994).</p>
+  </div>
+
+  <h3>Latence variable, jitter, partitions réseau</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Concept</th>
+        <th>Définition</th>
+        <th>Impact</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Latence</strong></td>
+        <td>Temps pour qu'un message aille de A à B</td>
+        <td>Peut varier de &lt;1 ms (même datacenter) à &gt;200 ms (intercontinental)</td>
+      </tr>
+      <tr>
+        <td><strong>Jitter</strong></td>
+        <td>Variation de la latence dans le temps</td>
+        <td>Rend les timeouts difficiles à calibrer ; un appel peut prendre 2 ms puis 500 ms</td>
+      </tr>
+      <tr>
+        <td><strong>Partition réseau</strong></td>
+        <td>Coupure de communication entre deux groupes de nœuds</td>
+        <td>Chaque groupe « croit » que l'autre est mort ; risque de « split brain »</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Analogie :</strong> Imaginez une réunion téléphonique à 5 personnes. Si le réseau de 2 participants coupe, ils continuent à parler entre eux, et les 3 autres continuent de leur côté. Quand la connexion revient, il faut <em>réconcilier</em> ce qui a été dit des deux côtés. C'est exactement une partition réseau.</p>
+
+  <h3>Notion de « Transparence »</h3>
+  <p>La transparence est l'objectif (souvent idéalisé) de cacher la complexité distribuée à l'utilisateur ou au développeur :</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Type de transparence</th>
+        <th>Signification</th>
+        <th>Exemple</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Localisation</strong></td>
+        <td>Le client ne sait pas où se trouve physiquement la ressource</td>
+        <td>DNS : on appelle <code>api.example.com</code>, pas <code>192.168.1.42:8080</code></td>
+      </tr>
+      <tr>
+        <td><strong>Réplication</strong></td>
+        <td>Le client ne sait pas qu'il y a plusieurs copies</td>
+        <td>Base de données répliquée : on lit « la » base, pas « la réplique n°3 »</td>
+      </tr>
+      <tr>
+        <td><strong>Migration</strong></td>
+        <td>Le service peut changer de machine sans impact client</td>
+        <td>Orchestrateur Kubernetes qui redéplace un pod</td>
+      </tr>
+      <tr>
+        <td><strong>Concurrence</strong></td>
+        <td>Plusieurs clients accèdent simultanément sans conflit visible</td>
+        <td>Édition collaborative (Google Docs)</td>
+      </tr>
+      <tr>
+        <td><strong>Panne</strong></td>
+        <td>Le client ne perçoit pas les pannes internes</td>
+        <td>Basculement automatique (failover) vers une réplique</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="card warn">
+    <div class="card-title">⚠️ Limites de la transparence</div>
+    <p>La transparence totale est un <strong>mythe</strong>. La latence réseau ne peut pas être cachée indéfiniment (un appel réseau sera toujours plus lent qu'un appel mémoire). Les partitions réseau forcent des choix (CAP). Et en cas de debug, la transparence <em>gêne</em> : on a besoin de savoir quel nœud, quel replica, quel datacenter a traité la requête. D'où l'importance de l'<strong>observabilité</strong> (logs, traces, métriques).</p>
+  </div>
+</section>
+
+<hr class="separator">
+
+<!-- ============================================================ -->
+<!-- COURS B) AVANTAGES & DÉFIS                                    -->
+<!-- ============================================================ -->
+<section id="cours-avantages">
+  <h2>B) Avantages &amp; défis <span class="badge badge-arch">Architecture</span></h2>
+
+  <h3>Avantages</h3>
+  <table>
+    <thead>
+      <tr><th>Avantage</th><th>Description</th><th>Exemple</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Scalabilité horizontale</strong></td>
+        <td>Ajouter des machines plutôt que rendre une machine plus puissante</td>
+        <td>Ajouter 10 instances du service « recherche » derrière un load balancer</td>
+      </tr>
+      <tr>
+        <td><strong>Résilience</strong></td>
+        <td>La panne d'un composant ne fait pas tomber tout le système</td>
+        <td>Le service « notifications » tombe, mais « upload » continue de fonctionner</td>
+      </tr>
+      <tr>
+        <td><strong>Modularité</strong></td>
+        <td>Chaque service a une responsabilité claire, déployable indépendamment</td>
+        <td>Mise à jour du service « auth » sans redéployer « stockage »</td>
+      </tr>
+      <tr>
+        <td><strong>Hétérogénéité technologique</strong></td>
+        <td>Chaque service peut utiliser la technologie la mieux adaptée</td>
+        <td>Service « ML » en Python, service « API » en Go, service « temps réel » en Rust</td>
+      </tr>
+      <tr>
+        <td><strong>Géo-distribution</strong></td>
+        <td>Rapprocher les données/services des utilisateurs</td>
+        <td>CDN, réplicas multi-régions</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Défis</h3>
+  <ul>
+    <li><strong>Cohérence des données</strong> : comment garantir que tous les nœuds voient les mêmes données au même moment ?</li>
+    <li><strong>Disponibilité</strong> : le système doit répondre même en cas de panne partielle.</li>
+    <li><strong>Tolérance aux partitions</strong> : le réseau <em>va</em> se couper ; comment réagir ?</li>
+    <li><strong>Observabilité</strong> : tracer une requête qui traverse 8 services est un défi.</li>
+    <li><strong>Debug distribué</strong> : reproduire un bug qui n'apparaît que quand le service C est lent et D reçoit un timeout est un cauchemar.</li>
+    <li><strong>Complexité opérationnelle</strong> : déploiement, monitoring, gestion des versions, rollback…</li>
+  </ul>
+
+  <h3>Théorème CAP</h3>
+  <div class="card info">
+    <div class="card-title">📘 Définition — Théorème CAP (Eric Brewer, 2000)</div>
+    <p>Dans un système distribué, il est <strong>impossible</strong> de garantir simultanément les trois propriétés suivantes :</p>
+    <ul>
+      <li><strong>C — Consistency (Cohérence)</strong> : toute lecture retourne la dernière écriture (ou une erreur).</li>
+      <li><strong>A — Availability (Disponibilité)</strong> : toute requête reçoit une réponse (pas forcément la plus récente).</li>
+      <li><strong>P — Partition tolerance (Tolérance aux partitions)</strong> : le système continue de fonctionner malgré des coupures réseau.</li>
+    </ul>
+    <p>En cas de partition réseau (P est inévitable), il faut choisir entre C et A.</p>
+  </div>
+
+  <!-- Figure CAP en SVG -->
+  <div class="figure-container">
+    <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg" style="max-width:420px;">
+      <!-- Triangle -->
+      <polygon points="250,40 60,350 440,350" fill="none" stroke="#1a73e8" stroke-width="3"/>
+      <!-- Labels sommets -->
+      <text x="250" y="28" text-anchor="middle" font-weight="bold" font-size="18" fill="#0d47a1">C (Cohérence)</text>
+      <text x="30" y="380" text-anchor="middle" font-weight="bold" font-size="18" fill="#0d47a1">A (Disponibilité)</text>
+      <text x="470" y="380" text-anchor="middle" font-weight="bold" font-size="18" fill="#0d47a1">P (Partitions)</text>
+      <!-- Arêtes labels -->
+      <text x="130" y="180" text-anchor="middle" font-size="13" fill="#ea4335" transform="rotate(-55,130,180)">CA : pas de partition</text>
+      <text x="370" y="180" text-anchor="middle" font-size="13" fill="#34a853" transform="rotate(55,370,180)">CP : sacrifie dispo</text>
+      <text x="250" y="370" text-anchor="middle" font-size="13" fill="#f9ab00">AP : cohérence éventuelle</text>
+      <!-- Exemples -->
+      <text x="250" y="230" text-anchor="middle" font-size="12" fill="#5f6368">Ex CP : MongoDB (strict)</text>
+      <text x="250" y="250" text-anchor="middle" font-size="12" fill="#5f6368">Ex AP : Cassandra, DynamoDB</text>
+      <text x="250" y="270" text-anchor="middle" font-size="12" fill="#5f6368">Ex CA : SGBD classique (1 nœud)</text>
+    </svg>
+    <div class="figure-caption">Figure 1 — Triangle CAP : en cas de partition (P), il faut choisir entre C et A.</div>
+  </div>
+
+  <div class="card warn">
+    <div class="card-title">⚠️ CAP sans dogmatisme</div>
+    <p>Le théorème CAP est souvent <strong>mal interprété</strong>. Il ne dit pas « choisissez 2 sur 3 ». Il dit : « En cas de partition (et les partitions arrivent), vous devez choisir entre cohérence et disponibilité <em>pour cette opération</em>. » En temps normal (pas de partition), vous pouvez avoir C et A. De plus, le choix peut être <strong>différent par opération</strong> : les lectures peuvent être AP (éventuelle) et les écritures CP (stricte).</p>
+  </div>
+
+  <h3>Modèles de cohérence</h3>
+
+  <h4>Cohérence forte (Strong Consistency)</h4>
+  <p>Après une écriture confirmée, <strong>toute</strong> lecture suivante (sur n'importe quel nœud) retourne cette écriture. Le système se comporte comme s'il n'y avait qu'une seule copie des données.</p>
+  <p><strong>Coût :</strong> latence élevée (synchronisation entre réplicas avant confirmation), disponibilité réduite si un replica est injoignable.</p>
+
+  <h4>Cohérence éventuelle (Eventual Consistency)</h4>
+  <p>Après une écriture, les réplicas <strong>finiront</strong> par converger vers la même valeur, mais il peut y avoir un délai pendant lequel différents clients voient des valeurs différentes.</p>
+
+  <div class="card info">
+    <div class="card-title">💡 Exemple concret — Document mis à jour</div>
+    <p>Alice met à jour un document sur le serveur de Paris à 10h00. Bob, connecté au serveur de Tokyo, lit le document à 10h00:01. Avec la <strong>cohérence forte</strong>, Bob voit obligatoirement la version d'Alice (mais sa requête peut être bloquée le temps de la synchronisation Paris→Tokyo). Avec la <strong>cohérence éventuelle</strong>, Bob peut voir l'ancienne version pendant quelques centaines de millisecondes, mais finira par voir la mise à jour. Pour un système de « likes » sur un réseau social, c'est acceptable. Pour un virement bancaire, non.</p>
+  </div>
+</section>
+
+<hr class="separator">
+
+<!-- ============================================================ -->
+<!-- COURS C) MODÈLES D'ARCHITECTURE                               -->
+<!-- ============================================================ -->
+<section id="cours-architectures">
+  <h2>C) Modèles d'architecture <span class="badge badge-arch">Architecture</span></h2>
+
+  <!-- Figure : Monolithique vs Distribué -->
+  <h3>Monolithique vs Distribué</h3>
+  <div class="figure-container">
+    <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" style="max-width:650px;">
+      <!-- Monolithique -->
+      <rect x="20" y="30" width="220" height="200" rx="12" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+      <text x="130" y="22" text-anchor="middle" font-weight="bold" font-size="14" fill="#0d47a1">Monolithique</text>
+      <rect x="40" y="50" width="180" height="35" rx="6" fill="#bbdefb" stroke="#1a73e8" stroke-width="1"/>
+      <text x="130" y="73" text-anchor="middle" font-size="12">UI + Logique métier</text>
+      <rect x="40" y="95" width="180" height="35" rx="6" fill="#bbdefb" stroke="#1a73e8" stroke-width="1"/>
+      <text x="130" y="118" text-anchor="middle" font-size="12">Accès données</text>
+      <rect x="40" y="140" width="180" height="35" rx="6" fill="#bbdefb" stroke="#1a73e8" stroke-width="1"/>
+      <text x="130" y="163" text-anchor="middle" font-size="12">Auth + Sécurité</text>
+      <rect x="70" y="185" width="120" height="30" rx="6" fill="#90caf9" stroke="#1a73e8" stroke-width="1"/>
+      <text x="130" y="205" text-anchor="middle" font-size="11" font-weight="bold">1 seule DB</text>
+
+      <!-- Flèche -->
+      <text x="310" y="140" text-anchor="middle" font-size="32" fill="#888">→</text>
+
+      <!-- Distribué -->
+      <text x="530" y="22" text-anchor="middle" font-weight="bold" font-size="14" fill="#0d47a1">Distribué (Microservices)</text>
+      <rect x="380" y="35" width="100" height="45" rx="8" fill="#c8e6c9" stroke="#34a853" stroke-width="2"/>
+      <text x="430" y="62" text-anchor="middle" font-size="11">Auth Service</text>
+      <rect x="500" y="35" width="100" height="45" rx="8" fill="#fff9c4" stroke="#f9ab00" stroke-width="2"/>
+      <text x="550" y="62" text-anchor="middle" font-size="11">API Gateway</text>
+      <rect x="380" y="100" width="100" height="45" rx="8" fill="#e1bee7" stroke="#7b1fa2" stroke-width="2"/>
+      <text x="430" y="127" text-anchor="middle" font-size="11">Stockage Svc</text>
+      <rect x="500" y="100" width="100" height="45" rx="8" fill="#b3e5fc" stroke="#0288d1" stroke-width="2"/>
+      <text x="550" y="127" text-anchor="middle" font-size="11">Recherche Svc</text>
+      <rect x="380" y="170" width="100" height="40" rx="6" fill="#90caf9" stroke="#1a73e8" stroke-width="1"/>
+      <text x="430" y="195" text-anchor="middle" font-size="10">DB Docs</text>
+      <rect x="500" y="170" width="100" height="40" rx="6" fill="#90caf9" stroke="#1a73e8" stroke-width="1"/>
+      <text x="550" y="195" text-anchor="middle" font-size="10">Index Search</text>
+      <!-- Lignes de communication -->
+      <line x1="480" y1="57" x2="500" y2="57" stroke="#888" stroke-width="1.5" stroke-dasharray="4"/>
+      <line x1="430" y1="80" x2="430" y2="100" stroke="#888" stroke-width="1.5" stroke-dasharray="4"/>
+      <line x1="550" y1="80" x2="550" y2="100" stroke="#888" stroke-width="1.5" stroke-dasharray="4"/>
+      <line x1="480" y1="122" x2="500" y2="122" stroke="#888" stroke-width="1.5" stroke-dasharray="4"/>
+      <line x1="430" y1="145" x2="430" y2="170" stroke="#888" stroke-width="1"/>
+      <line x1="550" y1="145" x2="550" y2="170" stroke="#888" stroke-width="1"/>
+      <text x="530" y="245" text-anchor="middle" font-size="11" fill="#5f6368">Communication par réseau (HTTP/gRPC)</text>
+    </svg>
+    <div class="figure-caption">Figure 2 — Monolithique (un bloc) vs Distribué (services indépendants communiquant par réseau).</div>
+  </div>
+
+  <h3>Client–Serveur</h3>
+  <p>Le modèle le plus classique : un <strong>client</strong> envoie des requêtes, un <strong>serveur</strong> les traite et renvoie des réponses.</p>
+
+  <div class="figure-container">
+    <svg viewBox="0 0 500 180" xmlns="http://www.w3.org/2000/svg" style="max-width:450px;">
+      <rect x="30" y="50" width="130" height="70" rx="10" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+      <text x="95" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#0d47a1">Client</text>
+      <text x="95" y="108" text-anchor="middle" font-size="11" fill="#5f6368">(navigateur, app)</text>
+      <rect x="320" y="50" width="150" height="70" rx="10" fill="#c8e6c9" stroke="#34a853" stroke-width="2"/>
+      <text x="395" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#2e7d32">Serveur</text>
+      <text x="395" y="108" text-anchor="middle" font-size="11" fill="#5f6368">(API, base de données)</text>
+      <!-- Flèches -->
+      <line x1="160" y1="72" x2="320" y2="72" stroke="#1a73e8" stroke-width="2" marker-end="url(#arrowBlue)"/>
+      <text x="240" y="65" text-anchor="middle" font-size="11" fill="#1a73e8">Requête (HTTP)</text>
+      <line x1="320" y1="100" x2="160" y2="100" stroke="#34a853" stroke-width="2" marker-end="url(#arrowGreen)"/>
+      <text x="240" y="120" text-anchor="middle" font-size="11" fill="#2e7d32">Réponse (JSON)</text>
+      <defs>
+        <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#1a73e8"/></marker>
+        <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#34a853"/></marker>
+      </defs>
+    </svg>
+    <div class="figure-caption">Figure 3 — Modèle Client-Serveur : requête/réponse unidirectionnelle.</div>
+  </div>
+
+  <p><strong>Avantages :</strong> simplicité conceptuelle, centralisation de la logique, sécurisation « au centre ».</p>
+  <p><strong>Risques :</strong> <span class="highlight">point unique de défaillance (SPOF)</span> si le serveur tombe, tout tombe. Scalabilité verticale limitée. Le serveur doit gérer toute la charge.</p>
+
+  <h3>Peer-to-Peer (P2P)</h3>
+  <p>Chaque nœud est à la fois client <strong>et</strong> serveur. Pas de point central.</p>
+
+  <div class="figure-container">
+    <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" style="max-width:360px;">
+      <circle cx="200" cy="60" r="35" fill="#fff9c4" stroke="#f9ab00" stroke-width="2"/>
+      <text x="200" y="65" text-anchor="middle" font-size="12" font-weight="bold">Pair A</text>
+      <circle cx="80" cy="200" r="35" fill="#fff9c4" stroke="#f9ab00" stroke-width="2"/>
+      <text x="80" y="205" text-anchor="middle" font-size="12" font-weight="bold">Pair B</text>
+      <circle cx="320" cy="200" r="35" fill="#fff9c4" stroke="#f9ab00" stroke-width="2"/>
+      <text x="320" y="205" text-anchor="middle" font-size="12" font-weight="bold">Pair C</text>
+      <circle cx="200" cy="260" r="35" fill="#fff9c4" stroke="#f9ab00" stroke-width="2"/>
+      <text x="200" y="265" text-anchor="middle" font-size="12" font-weight="bold">Pair D</text>
+      <!-- Lignes -->
+      <line x1="180" y1="90" x2="100" y2="172" stroke="#e65100" stroke-width="1.5" stroke-dasharray="5"/>
+      <line x1="220" y1="90" x2="300" y2="172" stroke="#e65100" stroke-width="1.5" stroke-dasharray="5"/>
+      <line x1="115" y1="205" x2="165" y2="250" stroke="#e65100" stroke-width="1.5" stroke-dasharray="5"/>
+      <line x1="235" y1="255" x2="285" y2="210" stroke="#e65100" stroke-width="1.5" stroke-dasharray="5"/>
+      <line x1="115" y1="195" x2="285" y2="195" stroke="#e65100" stroke-width="1.5" stroke-dasharray="5"/>
+      <line x1="200" y1="95" x2="200" y2="225" stroke="#e65100" stroke-width="1.5" stroke-dasharray="5"/>
+      <text x="200" y="20" text-anchor="middle" font-size="12" fill="#5f6368">Tous les nœuds sont égaux</text>
+    </svg>
+    <div class="figure-caption">Figure 4 — Modèle Peer-to-Peer : chaque nœud communique avec les autres sans serveur central.</div>
+  </div>
+
+  <p><strong>Avantages :</strong> pas de SPOF, scalabilité « naturelle » (chaque pair ajoute de la capacité), résilience.</p>
+  <p><strong>Risques :</strong> coordination complexe (consensus distribué), découverte des pairs (bootstrapping), sécurité difficile (comment faire confiance à un pair inconnu ?), cohérence très difficile à garantir.</p>
+
+  <h3>Microservices</h3>
+  <p>L'application est décomposée en <strong>services autonomes</strong>, chacun responsable d'un domaine métier, communiquant via des API (HTTP/REST, gRPC, messages). Chaque service a <strong>sa propre base de données</strong> (pattern « database per service »).</p>
+
+  <div class="figure-container">
+    <pre class="ascii-art" style="text-align:left;display:inline-block;font-size:0.78em;">
+                         ┌────────────────────┐
+                         │    API Gateway      │
+                         │  (routage, auth,    │
+                         │   rate limiting)     │
+                         └───┬───┬───┬───┬────┘
+                             │   │   │   │
+              ┌──────────────┘   │   │   └──────────────┐
+              │                  │   │                   │
+         ┌────▼─────┐    ┌──────▼──┐│  ┌────────────┐  ┌▼───────────┐
+         │  Auth     │    │Stockage ││  │ Recherche  │  │Notification│
+         │  Service  │    │ Service ││  │  Service   │  │  Service   │
+         │  (JWT)    │    │ (CRUD)  ││  │ (indexing) │  │  (email)   │
+         └────┬──────┘    └────┬────┘│  └─────┬──────┘  └────┬───────┘
+              │                │     │        │              │
+         ┌────▼──────┐   ┌────▼───┐ │  ┌─────▼──────┐  ┌────▼───────┐
+         │  Users DB │   │Docs DB │ │  │Search Index│  │  Queue     │
+         │(PostgreSQL│   │(Mongo) │ │  │(Elastic)   │  │ (Redis)    │
+         └───────────┘   └────────┘ │  └────────────┘  └────────────┘
+                                    │
+                            ┌───────▼────────┐
+                            │  Logs / Traces │
+                            │  (centralisé)  │
+                            └────────────────┘
+    </pre>
+    <div class="figure-caption">Figure 5 — Architecture Microservices avec API Gateway, services indépendants et bases dédiées.</div>
+  </div>
+
+  <p><strong>Avantages :</strong> déploiement indépendant, scalabilité fine (scaler uniquement le service surchargé), isolation des pannes, liberté technologique.</p>
+  <p><strong>Risques :</strong> complexité réseau, latence inter-services, cohérence transactionnelle (pas de transaction ACID globale), « service mesh » nécessaire en production pour gérer mTLS, retry, circuit breaker, observabilité.</p>
+
+  <div class="card info">
+    <div class="card-title">💡 Service Mesh — concept</div>
+    <p>Un <strong>service mesh</strong> (ex: Istio, Linkerd) est une couche d'infrastructure qui gère la communication entre microservices de manière transparente : chiffrement mTLS automatique, retry, circuit breaking, observabilité (traces distribuées), routage intelligent. Le code applicatif ne change pas ; la complexité réseau est déléguée à un « sidecar proxy » déployé à côté de chaque service.</p>
+  </div>
+
+  <h3>Tableau comparatif des architectures</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Critère</th>
+        <th>Client-Serveur</th>
+        <th>Peer-to-Peer</th>
+        <th>Microservices</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Latence</strong></td>
+        <td>Faible (1 hop)</td>
+        <td>Variable (multi-hop)</td>
+        <td>Moyenne (N hops inter-services)</td>
+      </tr>
+      <tr>
+        <td><strong>Résilience</strong></td>
+        <td>Faible (SPOF serveur)</td>
+        <td>Élevée (pas de centre)</td>
+        <td>Élevée (si circuit breakers)</td>
+      </tr>
+      <tr>
+        <td><strong>Scalabilité</strong></td>
+        <td>Verticale principalement</td>
+        <td>Horizontale naturelle</td>
+        <td>Horizontale fine (par service)</td>
+      </tr>
+      <tr>
+        <td><strong>Complexité</strong></td>
+        <td>Faible</td>
+        <td>Élevée (consensus, découverte)</td>
+        <td>Élevée (réseau, déploiement, observabilité)</td>
+      </tr>
+      <tr>
+        <td><strong>Sécurité</strong></td>
+        <td>Centralisée (+ facile)</td>
+        <td>Difficile (pairs non fiables)</td>
+        <td>Distribuée (Zero Trust nécessaire)</td>
+      </tr>
+      <tr>
+        <td><strong>Cohérence</strong></td>
+        <td>Forte (1 DB)</td>
+        <td>Éventuelle</td>
+        <td>Par service (forte ou éventuelle)</td>
+      </tr>
+      <tr>
+        <td><strong>Cas d'usage</strong></td>
+        <td>Apps web classiques, API simples</td>
+        <td>Partage fichiers, blockchain, IoT</td>
+        <td>Applications cloud, SaaS, grandes équipes</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<hr class="separator">
+
+<!-- ============================================================ -->
+<!-- COURS D) COMMUNICATION ENTRE COMPOSANTS                       -->
+<!-- ============================================================ -->
+<section id="cours-communication">
+  <h2>D) Communication entre composants <span class="badge badge-arch">Architecture</span></h2>
+
+  <h3>Messages vs Appels (Request/Response)</h3>
+  <table>
+    <thead>
+      <tr><th>Aspect</th><th>Request/Response (synchrone)</th><th>Messages (asynchrone)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Modèle</strong></td>
+        <td>Le client attend la réponse</td>
+        <td>Le producteur envoie un message et continue</td>
+      </tr>
+      <tr>
+        <td><strong>Couplage</strong></td>
+        <td>Fort (temporel : les deux doivent être « up »)</td>
+        <td>Faible (le consommateur traite quand il veut)</td>
+      </tr>
+      <tr>
+        <td><strong>Latence perçue</strong></td>
+        <td>Dépend du service appelé</td>
+        <td>Très faible pour l'émetteur (fire-and-forget)</td      </tr>
+        <tr>
+          <td><strong>Exemple</strong></td>
+          <td>HTTP GET /api/documents/42</td>
+          <td>Publier un événement "document_uploaded" dans une file</td>
+        </tr>
+        <tr>
+          <td><strong>Fiabilité</strong></td>
+          <td>Erreur immédiate si le serveur est down</td>
+          <td>Le message peut être persisté et retraité plus tard</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <h3>Sérialisation (JSON) &amp; Contrats (API)</h3>
+    <p>Quand deux services communiquent, ils doivent s'accorder sur le <strong>format des données</strong>. C'est la <strong>sérialisation</strong> : transformer un objet Python (dict, liste) en une séquence d'octets transmissible sur le réseau, puis le <strong>désérialiser</strong> de l'autre côté.</p>
+  
+    <p>Le format le plus courant en web/microservices : <strong>JSON</strong>.</p>
+  
+  <pre><code><span class="comment"># Sérialisation Python → JSON</span>
+  <span class="keyword">import</span> json
+  
+  document = {
+      <span class="string">"id"</span>: <span class="number">42</span>,
+      <span class="string">"titre"</span>: <span class="string">"Rapport Q3"</span>,
+      <span class="string">"auteur"</span>: <span class="string">"Alice"</span>,
+      <span class="string">"tags"</span>: [<span class="string">"finance"</span>, <span class="string">"confidentiel"</span>]
+  }
+  
+  <span class="comment"># Python dict → chaîne JSON</span>
+  json_str = json.<span class="function">dumps</span>(document)
+  <span class="comment"># '{"id": 42, "titre": "Rapport Q3", ...}'</span>
+  
+  <span class="comment"># Chaîne JSON → Python dict</span>
+  parsed = json.<span class="function">loads</span>(json_str)
+  <span class="comment"># parsed["titre"] → "Rapport Q3"</span>
+  </code></pre>
+  
+    <p>Le <strong>contrat d'API</strong> définit la « promesse » entre services : quelles routes, quels paramètres, quels codes de retour, quel format de réponse. Si le service Stockage change son format de réponse sans prévenir le service Recherche, c'est la casse. D'où l'importance du <strong>versioning d'API</strong> (<code>/api/v1/documents</code>) et de la <strong>rétrocompatibilité</strong>.</p>
+  
+    <h3>Idempotence, Retries, Timeouts</h3>
+  
+    <div class="card info">
+      <div class="card-title">📘 Définition — Idempotence</div>
+      <p>Une opération est <strong>idempotente</strong> si l'exécuter une fois ou plusieurs fois produit le <strong>même résultat</strong>. Exemples : <code>GET /documents/42</code> (lire un document) est idempotent. <code>PUT /documents/42</code> (remplacer un document) est idempotent. <code>POST /documents</code> (créer un document) n'est <strong>pas</strong> idempotent (chaque appel crée un nouveau document).</p>
+    </div>
+  
+    <p><strong>Pourquoi c'est vital en distribué ?</strong></p>
+    <p>Le réseau peut perdre la <em>réponse</em> (pas la requête). Le client ne sait pas si le serveur a traité sa demande. Il doit donc <strong>réessayer</strong> (retry). Si l'opération n'est pas idempotente, le retry peut créer des doublons (deux virements, deux commandes…). Solution : utiliser des <strong>clés d'idempotence</strong> (un UUID unique par requête que le serveur vérifie avant de traiter).</p>
+  
+    <table>
+      <thead>
+        <tr><th>Concept</th><th>Pourquoi c'est nécessaire</th><th>Piège si absent</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Timeout</strong></td>
+          <td>Éviter d'attendre indéfiniment un service qui ne répond pas</td>
+          <td>Threads/connexions bloquées → épuisement des ressources → cascade de pannes</td>
+        </tr>
+        <tr>
+          <td><strong>Retry</strong></td>
+          <td>Tolérer les erreurs transitoires (réseau instable, service en redémarrage)</td>
+          <td>Sans retry : une erreur transitoire = un échec permanent pour l'utilisateur</td>
+        </tr>
+        <tr>
+          <td><strong>Backoff exponentiel</strong></td>
+          <td>Espacer les retries pour ne pas surcharger un service déjà en difficulté</td>
+          <td>Retry immédiat en boucle → DDoS involontaire sur le service malade</td>
+        </tr>
+        <tr>
+          <td><strong>Circuit Breaker</strong></td>
+          <td>Couper les appels vers un service défaillant pour protéger le reste du système</td>
+          <td>Continuer à appeler un service mort → latence en cascade, crash global</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <div class="card warn">
+      <div class="card-title">⚠️ Piège classique — Retry sans idempotence</div>
+      <p>Scénario : l'utilisateur clique « Payer ». Le service de paiement traite la requête et débite le compte. Mais la réponse HTTP se perd dans le réseau. Le client fait un retry. Le serveur traite à nouveau → <strong>double débit</strong>. Solution : le client envoie un <code>idempotency_key</code> unique. Le serveur stocke cette clé et ignore les requêtes dupliquées.</p>
+    </div>
+  </section>
+  
+  <hr class="separator">
+  
+  <!-- ============================================================ -->
+  <!-- COURS E) IMPLICATIONS CYBERSÉCURITÉ                           -->
+  <!-- ============================================================ -->
+  <section id="cours-securite">
+    <h2>E) Implications cybersécurité <span class="badge badge-risk">Risques</span> <span class="badge badge-zt">Zero Trust</span></h2>
+  
+    <h3>Surface d'attaque étendue</h3>
+    <p>Dans un monolithe, la surface d'attaque se résume essentiellement à :</p>
+    <ul>
+      <li>L'interface externe (port HTTP)</li>
+      <li>La base de données (connexion locale)</li>
+    </ul>
+    <p>En distribué, <strong>chaque service expose un endpoint</strong>, chaque communication inter-service est un vecteur potentiel, chaque base de données dédiée est une cible. La surface d'attaque est <strong>multipliée par le nombre de services</strong>.</p>
+  
+    <div class="figure-container">
+      <pre class="ascii-art" style="text-align:left;display:inline-block;font-size:0.78em;">
+     Surface d'attaque — Monolithique vs Microservices
+  
+     MONOLITHIQUE                     MICROSERVICES
+     ┌─────────────────┐              ┌──────┐  ┌──────┐  ┌──────┐
+     │                 │    ──►       │ Svc A├──┤ Svc B├──┤ Svc C│
+     │   1 point       │              └──┬───┘  └──┬───┘  └──┬───┘
+     │   d'entrée      │                 │         │         │
+     │                 │              ┌──▼───┐  ┌──▼───┐  ┌──▼───┐
+     └────────┬────────┘              │ DB A │  │ DB B │  │ DB C │
+              │                       └──────┘  └──────┘  └──────┘
+         ┌────▼────┐
+         │  1 DB   │                  Surfaces d'attaque :
+         └─────────┘                  • 3 APIs externes
+                                      • 3 communications inter-services
+     Surfaces d'attaque :             • 3 bases de données
+     • 1 API externe                  • 3 fichiers de secrets
+     • 1 base de données              • N dépendances par service
+     • 1 fichier de secrets           • Le réseau interne lui-même
+      </pre>
+      <div class="figure-caption">Figure 6 — La surface d'attaque croît linéairement (voire quadratiquement) avec le nombre de services.</div>
+    </div>
+  
+    <h3>Zero Trust : principes</h3>
+    <div class="card security">
+      <div class="card-title">🔐 Point cybersécurité — Zero Trust</div>
+      <p>Le modèle <strong>Zero Trust</strong> part du principe que <strong>aucun composant n'est fiable par défaut</strong>, même à l'intérieur du réseau. Chaque requête doit être authentifiée et autorisée, indépendamment de sa provenance.</p>
+      <p>Principes clés :</p>
+      <ul>
+        <li><strong>Authentification partout (AuthN)</strong> : chaque service vérifie l'identité de l'appelant (pas seulement l'API Gateway).</li>
+        <li><strong>Autorisation partout (AuthZ)</strong> : chaque service vérifie que l'appelant a le <em>droit</em> de faire cette action.</li>
+        <li><strong>Moindre privilège</strong> : chaque service n'a accès qu'aux ressources strictement nécessaires à sa mission.</li>
+        <li><strong>Chiffrement en transit</strong> : toute communication est chiffrée, y compris entre services internes (mTLS).</li>
+        <li><strong>Vérification continue</strong> : pas de « session de confiance » permanente ; vérifier à chaque requête.</li>
+        <li><strong>Segmentation micro</strong> : les services ne peuvent communiquer qu'avec leurs dépendances déclarées.</li>
+      </ul>
+    </div>
+  
+    <h3>Menaces spécifiques aux systèmes distribués</h3>
+  
+    <table>
+      <thead>
+        <tr>
+          <th>Menace</th>
+          <th>Impact</th>
+          <th>Symptôme</th>
+          <th>Mesure</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>DDoS (Distributed Denial of Service)</strong></td>
+          <td>Service indisponible, surcharge des ressources</td>
+          <td>Latence extrême, erreurs 503, CPU/RAM à 100%</td>
+          <td>Rate limiting, WAF, auto-scaling, CDN avec protection DDoS</td>
+        </tr>
+        <tr>
+          <td><strong>MITM (Man-in-the-Middle)</strong></td>
+          <td>Interception/modification des données en transit entre services</td>
+          <td>Données corrompues, réponses inattendues, logs incohérents</td>
+          <td>mTLS entre tous les services, certificats vérifiés, pinning</td>
+        </tr>
+        <tr>
+          <td><strong>Compromission d'un microservice</strong></td>
+          <td>Accès latéral aux autres services et données</td>
+          <td>Requêtes anormales depuis un service, exfiltration de données</td>
+          <td>Segmentation réseau, moindre privilège, isolation par namespace, monitoring comportemental</td>
+        </tr>
+        <tr>
+          <td><strong>Supply chain attack</strong></td>
+          <td>Injection de code malveillant via une dépendance (pip, npm…)</td>
+          <td>Comportement inattendu après mise à jour, backdoor</td>
+          <td>Audit des dépendances, lock files, scan de vulnérabilités (pip-audit), SBOM</td>
+        </tr>
+        <tr>
+          <td><strong>SSRF (Server-Side Request Forgery)</strong></td>
+          <td>Un service est trompé pour accéder à des ressources internes</td>
+          <td>Accès à des endpoints internes (metadata, DB, admin)</td>
+          <td>Validation stricte des URLs, whitelist de destinations, blocage des IPs privées</td>
+        </tr>
+        <tr>
+          <td><strong>Secrets leak</strong></td>
+          <td>Fuite de clés API, mots de passe, tokens dans le code ou les logs</td>
+          <td>Accès non autorisé, compromission en cascade</td>
+          <td>Vault (HashiCorp), variables d'environnement, rotation automatique, scan de secrets dans le CI</td>
+        </tr>
+        <tr>
+          <td><strong>Injection (SQL, NoSQL, Command)</strong></td>
+          <td>Exécution de code arbitraire via des entrées non validées</td>
+          <td>Données exfiltrées, tables supprimées, shell obtenu</td>
+          <td>Requêtes paramétrées, ORM, validation d'entrée stricte, WAF</td>
+        </tr>
+        <tr>
+          <td><strong>Élévation de privilèges inter-services</strong></td>
+          <td>Un service usurpe l'identité d'un autre pour accéder à des ressources protégées</td>
+          <td>Appels API avec des permissions excessives</td>
+          <td>RBAC granulaire, tokens scoped, vérification d'audience dans les JWT</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <h3>Mesures de sécurité — Vue d'ensemble</h3>
+  
+    <table>
+      <thead>
+        <tr><th>Mesure</th><th>Description</th><th>Niveau</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>mTLS</strong></td><td>Mutual TLS : chaque service présente un certificat, vérification bidirectionnelle</td><td>Transport</td></tr>
+        <tr><td><strong>JWT (JSON Web Token)</strong></td><td>Token signé portant l'identité et les droits, vérifié par chaque service sans appel à l'auth server</td><td>Application</td></tr>
+        <tr><td><strong>Rate Limiting</strong></td><td>Limiter le nombre de requêtes par client/IP/service par fenêtre de temps</td><td>API Gateway / Service</td></tr>
+        <tr><td><strong>Segmentation réseau</strong></td><td>Isoler les services en sous-réseaux ; un service compromis ne peut pas « scanner » tout le réseau</td><td>Infrastructure</td></tr>
+        <tr><td><strong>RBAC</strong></td><td>Role-Based Access Control : droits basés sur le rôle du service ou de l'utilisateur</td><td>Application</td></tr>
+        <tr><td><strong>Logs &amp; Audit</strong></td><td>Journalisation centralisée de tous les accès, avec corrélation (trace ID)</td><td>Observabilité</td></tr>
+        <tr><td><strong>Rotation des secrets</strong></td><td>Changer automatiquement les clés/mots de passe à intervalles réguliers</td><td>Opérationnel</td></tr>
+        <tr><td><strong>Validation d'entrée</strong></td><td>Valider, typer, limiter toutes les entrées utilisateur et inter-services</td><td>Application</td></tr>
+      </tbody>
+    </table>
+  
+    <div class="card security">
+      <div class="card-title">🔐 mTLS — Explication conceptuelle</div>
+      <p>En TLS classique (HTTPS), seul le <strong>serveur</strong> présente un certificat au client. En <strong>mTLS</strong> (mutual TLS), le <strong>client aussi</strong> présente un certificat. Ainsi, les deux parties vérifient l'identité de l'autre. Dans un contexte microservices, chaque service a son propre certificat. Quand le service Auth appelle le service Stockage, les deux s'authentifient mutuellement. Un attaquant qui s'insère dans le réseau ne peut pas se faire passer pour un service légitime.</p>
+    </div>
+  
+    <div class="card security">
+      <div class="card-title">🔐 JWT — Explication conceptuelle</div>
+      <p>Un <strong>JWT</strong> est un jeton composé de trois parties encodées en Base64, séparées par des points :</p>
+      <ul>
+        <li><strong>Header</strong> : algorithme de signature (ex: HS256, RS256)</li>
+        <li><strong>Payload</strong> : données (claims) : identité (<code>sub</code>), rôles, expiration (<code>exp</code>), audience (<code>aud</code>)</li>
+        <li><strong>Signature</strong> : garantit que le token n'a pas été modifié</li>
+      </ul>
+      <p>Le service Auth émet le JWT. Chaque service récepteur <strong>vérifie la signature localement</strong> (avec la clé publique) sans rappeler le service Auth. Cela découple l'authentification de la vérification, crucial en distribué.</p>
+    </div>
+  </section>
+  
+  <hr class="separator">
+  
+  <!-- ============================================================ -->
+  <!-- LIVE CODING PYTHON                                            -->
+  <!-- ============================================================ -->
+  <section id="live-coding">
+    <h2>🐍 Live Coding Python — Mini-exemples <span class="badge badge-tp">TP</span></h2>
+  
+    <h3>Exemple 1 — Mini client/serveur HTTP en Python (stdlib)</h3>
+    <p>Objectif : montrer un serveur qui renvoie du JSON et un client qui l'appelle. Observer la latence et le timeout.</p>
+  
+    <h4>Serveur (serveur.py)</h4>
+  <pre><code><span class="comment">#!/usr/bin/env python3</span>
+  <span class="comment">"""
+  Mini serveur HTTP qui renvoie un document JSON.
+  Utilise uniquement la stdlib Python (http.server + json).
+  """</span>
+  
+  <span class="keyword">import</span> json
+  <span class="keyword">import</span> time
+  <span class="keyword">import</span> random
+  <span class="keyword">from</span> http.server <span class="keyword">import</span> HTTPServer, BaseHTTPRequestHandler
+  
+  <span class="comment"># Base de "documents" en mémoire (simule une DB)</span>
+  DOCUMENTS = {
+      <span class="string">"1"</span>: {<span class="string">"id"</span>: <span class="number">1</span>, <span class="string">"titre"</span>: <span class="string">"Rapport Q3"</span>, <span class="string">"auteur"</span>: <span class="string">"Alice"</span>},
+      <span class="string">"2"</span>: {<span class="string">"id"</span>: <span class="number">2</span>, <span class="string">"titre"</span>: <span class="string">"Plan stratégique"</span>, <span class="string">"auteur"</span>: <span class="string">"Bob"</span>},
+      <span class="string">"3"</span>: {<span class="string">"id"</span>: <span class="number">3</span>, <span class="string">"titre"</span>: <span class="string">"Audit sécurité"</span>, <span class="string">"auteur"</span>: <span class="string">"Charlie"</span>},
+  }
+  
+  
+  <span class="keyword">class</span> <span class="function">DocumentHandler</span>(BaseHTTPRequestHandler):
+      <span class="keyword">def</span> <span class="function">do_GET</span>(self):
+          <span class="comment"># Simuler une latence réseau variable (0 à 2 secondes)</span>
+          latence = random.<span class="function">uniform</span>(<span class="number">0</span>, <span class="number">2.0</span>)
+          <span class="function">print</span>(<span class="string">f"⏱ Latence simulée : {latence:.2f}s"</span>)
+          time.<span class="function">sleep</span>(latence)
+  
+          <span class="comment"># Routage simple : /documents ou /documents/{id}</span>
+          path = self.path.<span class="function">strip</span>(<span class="string">"/"</span>)
+          parts = path.<span class="function">split</span>(<span class="string">"/"</span>)
+  
+          <span class="keyword">if</span> parts[<span class="number">0</span>] == <span class="string">"documents"</span>:
+              <span class="keyword">if</span> <span class="function">len</span>(parts) == <span class="number">1</span>:
+                  <span class="comment"># Lister tous les documents</span>
+                  self.<span class="function">_send_json</span>(<span class="number">200</span>, <span class="function">list</span>(DOCUMENTS.<span class="function">values</span>()))
+              <span class="keyword">elif</span> <span class="function">len</span>(parts) == <span class="number">2</span> <span class="keyword">and</span> parts[<span class="number">1</span>] <span class="keyword">in</span> DOCUMENTS:
+                  <span class="comment"># Un document spécifique</span>
+                  self.<span class="function">_send_json</span>(<span class="number">200</span>, DOCUMENTS[parts[<span class="number">1</span>]])
+              <span class="keyword">else</span>:
+                  self.<span class="function">_send_json</span>(<span class="number">404</span>, {<span class="string">"error"</span>: <span class="string">"Document non trouvé"</span>})
+          <span class="keyword">else</span>:
+              self.<span class="function">_send_json</span>(<span class="number">404</span>, {<span class="string">"error"</span>: <span class="string">"Route inconnue"</span>})
+  
+      <span class="keyword">def</span> <span class="function">_send_json</span>(self, status_code, data):
+          <span class="comment">"""Envoie une réponse JSON avec le code HTTP donné."""</span>
+          response = json.<span class="function">dumps</span>(data, ensure_ascii=<span class="keyword">False</span>).<span class="function">encode</span>(<span class="string">"utf-8"</span>)
+          self.<span class="function">send_response</span>(status_code)
+          self.<span class="function">send_header</span>(<span class="string">"Content-Type"</span>, <span class="string">"application/json; charset=utf-8"</span>)
+          self.<span class="function">send_header</span>(<span class="string">"Content-Length"</span>, <span class="function">str</span>(<span class="function">len</span>(response)))
+          self.<span class="function">end_headers</span>()
+          self.wfile.<span class="function">write</span>(response)
+  
+  
+  <span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+      serveur = <span class="function">HTTPServer</span>((<span class="string">"127.0.0.1"</span>, <span class="number">8000</span>), DocumentHandler)
+      <span class="function">print</span>(<span class="string">"🚀 Serveur démarré sur http://127.0.0.1:8000"</span>)
+      <span class="function">print</span>(<span class="string">"   Essayez : /documents  ou  /documents/1"</span>)
+      serveur.<span class="function">serve_forever</span>()
+  </code></pre>
+  
+    <p><strong>Points pédagogiques :</strong></p>
+    <ul>
+      <li>Le <code>time.sleep(random.uniform(0, 2.0))</code> simule la <strong>latence variable</strong> du réseau. Parfois la réponse est quasi instantanée, parfois elle prend 2 secondes.</li>
+      <li>Le serveur renvoie du <strong>JSON</strong> (sérialisation). Le client devra le <strong>désérialiser</strong>.</li>
+      <li>Il n'y a <strong>aucune authentification</strong> ici — c'est volontaire pour le moment. On verra plus tard pourquoi c'est un problème.</li>
+    </ul>
+  
+    <h4>Client (client.py)</h4>
+  <pre><code><span class="comment">#!/usr/bin/env python3</span>
+  <span class="comment">"""
+  Mini client HTTP qui appelle le serveur de documents.
+  Utilise uniquement la stdlib Python (urllib).
+  Montre la gestion du timeout.
+  """</span>
+  
+  <span class="keyword">import</span> json
+  <span class="keyword">import</span> time
+  <span class="keyword">import</span> urllib.request
+  <span class="keyword">import</span> urllib.error
+  
+  BASE_URL = <span class="string">"http://127.0.0.1:8000"</span>
+  TIMEOUT_SECONDS = <span class="number">1.5</span>  <span class="comment"># ← on coupe si le serveur met plus de 1.5s</span>
+  
+  
+  <span class="keyword">def</span> <span class="function">get_document</span>(doc_id):
+      <span class="comment">"""Récupère un document par son ID avec gestion du timeout."""</span>
+      url = <span class="string">f"<span>{BASE_URL}</span>/documents/<span>{doc_id}</span>"</span>
+      <span class="function">print</span>(<span class="string">f"\n📡 Requête vers {url} (timeout={TIMEOUT_SECONDS}s)"</span>)
+  
+      debut = time.<span class="function">time</span>()
+      <span class="keyword">try</span>:
+          <span class="comment"># urllib.request.urlopen accepte un paramètre timeout</span>
+          response = urllib.request.<span class="function">urlopen</span>(url, timeout=TIMEOUT_SECONDS)
+          duree = time.<span class="function">time</span>() - debut
+  
+          data = json.<span class="function">loads</span>(response.<span class="function">read</span>().<span class="function">decode</span>(<span class="string">"utf-8"</span>))
+          <span class="function">print</span>(<span class="string">f"✅ Réponse reçue en {duree:.2f}s"</span>)
+          <span class="function">print</span>(<span class="string">f"   Données : {data}"</span>)
+          <span class="keyword">return</span> data
+  
+      <span class="keyword">except</span> urllib.error.URLError <span class="keyword">as</span> e:
+          duree = time.<span class="function">time</span>() - debut
+          <span class="keyword">if</span> <span class="string">"timed out"</span> <span class="keyword">in</span> <span class="function">str</span>(e):
+              <span class="function">print</span>(<span class="string">f"⏰ TIMEOUT après {duree:.2f}s — le serveur est trop lent !"</span>)
+          <span class="keyword">else</span>:
+              <span class="function">print</span>(<span class="string">f"❌ Erreur réseau après {duree:.2f}s : {e}"</span>)
+          <span class="keyword">return</span> <span class="keyword">None</span>
+  
+  
+  <span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+      <span class="comment"># Appeler plusieurs fois pour observer la variabilité</span>
+      <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">5</span>):
+          <span class="function">get_document</span>(<span class="string">"1"</span>)
+  </code></pre>
+  
+    <p><strong>Observation attendue :</strong> sur 5 appels, certains réussissent (latence &lt; 1.5s), d'autres échouent en timeout (latence &gt; 1.5s). C'est exactement la réalité des systèmes distribués : <strong>la latence est imprévisible</strong>.</p>
+  
+    <div class="card success">
+      <div class="card-title">✅ À retenir</div>
+      <p>Toujours configurer un <strong>timeout</strong> sur les appels réseau. Un appel sans timeout peut bloquer indéfiniment un thread et provoquer un « resource starvation » → cascade de pannes.</p>
+    </div>
+  
+    <h3>Exemple 2 — Retry avec backoff exponentiel</h3>
+    <p>Quand un appel échoue (timeout, erreur 5xx), on veut <strong>réessayer</strong> automatiquement, mais en espaçant les tentatives pour ne pas surcharger le serveur malade.</p>
+  
+  <pre><code><span class="comment">#!/usr/bin/env python3</span>
+  <span class="comment">"""
+  Implémentation d'un retry avec backoff exponentiel.
+  Pattern essentiel en systèmes distribués.
+  """</span>
+  
+  <span class="keyword">import</span> json
+  <span class="keyword">import</span> time
+  <span class="keyword">import</span> random
+  <span class="keyword">import</span> urllib.request
+  <span class="keyword">import</span> urllib.error
+  
+  
+  <span class="keyword">def</span> <span class="function">fetch_with_retry</span>(url, max_retries=<span class="number">4</span>, base_delay=<span class="number">0.5</span>, timeout=<span class="number">1.5</span>):
+      <span class="comment">"""
+      Appelle `url` avec retry + backoff exponentiel.
+  
+      Stratégie :
+        - Tentative 1 : immédiate
+        - Tentative 2 : attendre base_delay * 2^0 + jitter  (≈ 0.5s)
+        - Tentative 3 : attendre base_delay * 2^1 + jitter  (≈ 1.0s)
+        - Tentative 4 : attendre base_delay * 2^2 + jitter  (≈ 2.0s)
+  
+      Le jitter (variation aléatoire) évite que tous les clients
+      retentent exactement au même moment ("thundering herd").
+      """</span>
+  
+      <span class="keyword">for</span> tentative <span class="keyword">in</span> <span class="function">range</span>(max_retries):
+          <span class="keyword">try</span>:
+              <span class="function">print</span>(<span class="string">f"  🔄 Tentative {tentative + 1}/{max_retries}..."</span>)
+              response = urllib.request.<span class="function">urlopen</span>(url, timeout=timeout)
+              data = json.<span class="function">loads</span>(response.<span class="function">read</span>().<span class="function">decode</span>(<span class="string">"utf-8"</span>))
+              <span class="function">print</span>(<span class="string">f"  ✅ Succès à la tentative {tentative + 1}"</span>)
+              <span class="keyword">return</span> data
+  
+          <span class="keyword">except</span> (urllib.error.URLError, urllib.error.HTTPError) <span class="keyword">as</span> e:
+              <span class="function">print</span>(<span class="string">f"  ⚠️ Échec : {e}"</span>)
+  
+              <span class="keyword">if</span> tentative < max_retries - <span class="number">1</span>:
+                  <span class="comment"># Backoff exponentiel avec jitter</span>
+                  delay = base_delay * (<span class="number">2</span> ** tentative)
+                  jitter = random.<span class="function">uniform</span>(<span class="number">0</span>, delay * <span class="number">0.3</span>)
+                  wait = delay + jitter
+                  <span class="function">print</span>(<span class="string">f"  💤 Attente {wait:.2f}s avant retry..."</span>)
+                  time.<span class="function">sleep</span>(wait)
+              <span class="keyword">else</span>:
+                  <span class="function">print</span>(<span class="string">f"  ❌ Toutes les tentatives échouées."</span>)
+                  <span class="keyword">return</span> <span class="keyword">None</span>
+  
+  
+  <span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+      <span class="function">print</span>(<span class="string">"📡 Appel avec retry + backoff exponentiel :"</span>)
+      result = <span class="function">fetch_with_retry</span>(<span class="string">"http://127.0.0.1:8000/documents/2"</span>)
+      <span class="keyword">if</span> result:
+          <span class="function">print</span>(<span class="string">f"\n📄 Document récupéré : {result}"</span>)
+      <span class="keyword">else</span>:
+          <span class="function">print</span>(<span class="string">"\n💀 Impossible de joindre le service."</span>)
+  </code></pre>
+  
+    <div class="card info">
+      <div class="card-title">💡 Pourquoi le jitter ?</div>
+      <p>Sans jitter, si 1000 clients échouent en même temps et retentent tous après exactement 1s, le serveur reçoit 1000 requêtes simultanées au moment du retry → re-crash. Le <strong>jitter</strong> (variation aléatoire) étale les retries dans le temps, lissant la charge. C'est le pattern « <strong>decorrelated jitter</strong> ».</p>
+    </div>
+  
+    <h3>Exemple 3 — Appels asynchrones avec asyncio</h3>
+    <p>En distribué, un service doit souvent appeler <strong>plusieurs autres services</strong>. Les appeler <strong>séquentiellement</strong> additionne les latences. Les appeler <strong>en parallèle (asynchrone)</strong> réduit le temps total au max des latences individuelles.</p>
+  
+  <pre><code><span class="comment">#!/usr/bin/env python3</span>
+  <span class="comment">"""
+  Illustration : appels séquentiels vs asynchrones.
+  Montre l'impact de la latence en distribué.
+  """</span>
+  
+  <span class="keyword">import</span> asyncio
+  <span class="keyword">import</span> time
+  
+  
+  <span class="keyword">async def</span> <span class="function">appeler_service</span>(nom, latence):
+      <span class="comment">"""Simule un appel à un service distant avec une latence donnée."""</span>
+      <span class="function">print</span>(<span class="string">f"  📡 Appel à {nom} (latence prévue : {latence}s)..."</span>)
+      <span class="keyword">await</span> asyncio.<span class="function">sleep</span>(latence)  <span class="comment"># Simule l'attente réseau</span>
+      <span class="function">print</span>(<span class="string">f"  ✅ {nom} a répondu !"</span>)
+      <span class="keyword">return</span> {<span class="string">"service"</span>: nom, <span class="string">"status"</span>: <span class="string">"ok"</span>}
+  
+  
+  <span class="keyword">async def</span> <span class="function">appels_sequentiels</span>():
+      <span class="comment">"""Appels l'un après l'autre — les latences s'additionnent."""</span>
+      <span class="function">print</span>(<span class="string">"\n── Appels SÉQUENTIELS ──"</span>)
+      debut = time.<span class="function">time</span>()
+  
+      r1 = <span class="keyword">await</span> <span class="function">appeler_service</span>(<span class="string">"Auth"</span>, <span class="number">0.5</span>)
+      r2 = <span class="keyword">await</span> <span class="function">appeler_service</span>(<span class="string">"Stockage"</span>, <span class="number">0.8</span>)
+      r3 = <span class="keyword">await</span> <span class="function">appeler_service</span>(<span class="string">"Recherche"</span>, <span class="number">0.3</span>)
+  
+      total = time.<span class="function">time</span>() - debut
+      <span class="function">print</span>(<span class="string">f"  ⏱ Temps total séquentiel : {total:.2f}s"</span>)
+      <span class="comment"># Attendu : ≈ 0.5 + 0.8 + 0.3 = 1.6s</span>
+  
+  
+  <span class="keyword">async def</span> <span class="function">appels_paralleles</span>():
+      <span class="comment">"""Appels en parallèle — temps total = max des latences."""</span>
+      <span class="function">print</span>(<span class="string">"\n── Appels PARALLÈLES (asyncio.gather) ──"</span>)
+      debut = time.<span class="function">time</span>()
+  
+      r1, r2, r3 = <span class="keyword">await</span> asyncio.<span class="function">gather</span>(
+          <span class="function">appeler_service</span>(<span class="string">"Auth"</span>, <span class="number">0.5</span>),
+          <span class="function">appeler_service</span>(<span class="string">"Stockage"</span>, <span class="number">0.8</span>),
+          <span class="function">appeler_service</span>(<span class="string">"Recherche"</span>, <span class="number">0.3</span>),
+      )
+  
+      total = time.<span class="function">time</span>() - debut
+      <span class="function">print</span>(<span class="string">f"  ⏱ Temps total parallèle : {total:.2f}s"</span>)
+      <span class="comment"># Attendu : ≈ max(0.5, 0.8, 0.3) = 0.8s  →  2× plus rapide !</span>
+  
+  
+  <span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+      asyncio.<span class="function">run</span>(<span class="function">appels_sequentiels</span>())
+      asyncio.<span class="function">run</span>(<span class="function">appels_paralleles</span>())
+  </code></pre>
+  
+    <div class="card success">
+      <div class="card-title">✅ À retenir</div>
+      <p>En distribué, <strong>paralléliser les appels indépendants</strong> est essentiel pour maîtriser la latence perçue par l'utilisateur. Séquentiel : 0.5 + 0.8 + 0.3 = <strong>1.6s</strong>. Parallèle : max(0.5, 0.8, 0.3) = <strong>0.8s</strong>. Gain de 50% avec seulement 3 services — le gain augmente avec le nombre de services.</p>
+    </div>
+  </section>
+  
+  <hr class="separator">
+  
+  <!-- ============================================================ -->
+  <!-- TP GUIDÉ                                                      -->
+  <!-- ============================================================ -->
+  <section id="tp-guide">
+    <h2>🧪 TP Guidé (90 min) — Projet fil rouge <span class="badge badge-tp">TP</span></h2>
+  
+    <div class="card info">
+      <div class="card-title">📋 Contexte du projet fil rouge</div>
+      <p><strong>Système de Gestion Documentaire Distribué (SGDD)</strong></p>
+      <p>Vous concevez l'architecture d'un système permettant à une organisation de stocker, rechercher et gérer des documents de manière distribuée. Le système doit supporter plusieurs centaines d'utilisateurs simultanés, garantir la disponibilité des documents et respecter des contraintes de sécurité (documents confidentiels, audit d'accès, conformité RGPD).</p>
+    </div>
+  
+    <!-- TP 5.1 -->
+    <h3>TP5.1 — Schématisation d'architecture distribuée <span class="badge badge-time">30 min</span></h3>
+  
+    <h4>Objectif</h4>
+    <p>Concevoir l'architecture logique et physique du SGDD en identifiant les composants, leurs responsabilités et leurs interactions.</p>
+  
+    <h4>Composants à considérer</h4>
+    <table>
+      <thead>
+        <tr><th>Composant</th><th>Responsabilité</th><th>Exemples de technologie</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Auth Service</strong></td><td>Authentification (login), émission de tokens JWT, gestion des rôles</td><td>Python (Flask/FastAPI), PostgreSQL</td></tr>
+        <tr><td><strong>Stockage Service</strong></td><td>CRUD des documents (upload, download, suppression), métadonnées</td><td>Python, stockage objet (MinIO/S3), MongoDB</td></tr>
+        <tr><td><strong>Recherche Service</strong></td><td>Indexation et recherche plein texte dans les documents</td><td>Python, Elasticsearch/Whoosh</td></tr>
+        <tr><td><strong>API Gateway</strong></td><td>Point d'entrée unique, routage, rate limiting, validation tokens</td><td>Nginx, Traefik, ou Python custom</td></tr>
+        <tr><td><strong>Base(s) de données</strong></td><td>Persistance des métadonnées, index, utilisateurs</td><td>PostgreSQL, MongoDB, Redis (cache)</td></tr>
+        <tr><td><strong>Service de Notifications</strong> (optionnel)</td><td>Alertes lors d'uploads, modifications, partages</td><td>Python, Redis Pub/Sub, email</td></tr>
+      </tbody>
+    </table>
+  
+    <h4>Interactions principales à modéliser</h4>
+    <ul>
+      <li><strong>Upload d'un document :</strong> Client → API Gateway → Auth (vérification JWT) → Stockage (sauvegarde fichier + métadonnées) → Recherche (indexation) → Notification (alerte)</li>
+      <li><strong>Download d'un document :</strong> Client → API Gateway → Auth → Stockage (récupération)</li>
+      <li><strong>Recherche :</strong> Client → API Gateway → Auth → Recherche (requête) → retour résultats</li>
+    </ul>
+  
+    <h4>Gabarit — Questions à répondre</h4>
+    <ul>
+      <li>Combien de services identifiez-vous ? Quelles sont leurs frontières ?</li>
+      <li>Quel protocole de communication entre chaque paire de services ? (HTTP REST, messages asynchrones, appels directs)</li>
+      <li>Où placez-vous les bases de données ? Une par service ou mutualisées ?</li>
+      <li>Y a-t-il des services qui peuvent être appelés en parallèle ?</li>
+      <li>Quel est le chemin critique (plus long chemin de latence) pour chaque opération ?</li>
+    </ul>
+  
+    <h4>Exigences pour le livrable</h4>
+    <ul>
+      <li>Dessiner l'<strong>architecture logique</strong> : composants + flèches d'interaction (peut être en ASCII art, dessin papier ou outil de diagramme)</li>
+      <li>Dessiner l'<strong>architecture physique</strong> : sur combien de machines/conteneurs déployer ? Quels composants co-localisés ?</li>
+      <li>Rédiger une <strong>courte description</strong> (5-10 lignes) justifiant les choix</li>
+    </ul>
+  
+    <div class="card warn">
+      <div class="card-title">⚠️ Piège classique</div>
+      <p>Ne pas confondre architecture <strong>logique</strong> (services et interactions) et architecture <strong>physique</strong> (machines, conteneurs, réseau). Deux services logiques peuvent tourner sur la même machine en dev, mais sur des machines séparées en production.</p>
+    </div>
+  
+    <!-- TP 5.2 -->
+    <h3>TP5.2 — Analyse des défis distribués <span class="badge badge-time">30 min</span></h3>
+  
+    <h4>Objectif</h4>
+    <p>Pour chaque composant du SGDD, analyser les défis distribués et proposer des solutions architecturales.</p>
+  
+    <h4>Grille d'analyse par composant</h4>
+    <p>Pour <strong>chaque service</strong>, répondre aux questions suivantes :</p>
+    <ul>
+      <li><strong>Cohérence :</strong> Quelles données doivent être cohérentes ? Quel modèle de cohérence (forte / éventuelle) est acceptable ?</li>
+      <li><strong>Tolérance aux pannes :</strong> Que se passe-t-il si ce service tombe ? Quels autres services sont impactés ? Le système reste-t-il utilisable ?</li>
+      <li><strong>Latence :</strong> Où la latence se crée-t-elle ? Quels appels sont sur le chemin critique ?</li>
+    </ul>
+  
+    <h4>Solutions architecturales à considérer</h4>
+    <table>
+      <thead>
+        <tr><th>Pattern</th><th>Problème résolu</th><th>Principe</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Cache</strong></td>
+          <td>Latence, charge DB</td>
+          <td>Stocker les résultats fréquents en mémoire (Redis) ; invalidation à l'écriture</td>
+        </tr>
+        <tr>
+          <td><strong>Réplication</strong></td>
+          <td>Disponibilité, tolérance pannes</td>
+          <td>Plusieurs copies de la DB ; failover automatique</td>
+        </tr>
+        <tr>
+          <td><strong>File de messages</strong></td>
+          <td>Couplage temporel, pics de charge</td>
+          <td>Découpler producteur/consommateur ; le message attend dans la file si le consommateur est lent</td>
+        </tr>
+        <tr>
+          <td><strong>Fallback</strong></td>
+          <td>Dégradation gracieuse</td>
+          <td>Si un service est indisponible, retourner un résultat par défaut (ex : recherche retourne « service temporairement indisponible » mais upload continue)</td>
+        </tr>
+        <tr>
+          <td><strong>Circuit Breaker</strong></td>
+          <td>Cascade de pannes</td>
+          <td>Si un service échoue N fois consécutives, arrêter de l'appeler pendant X secondes (état « ouvert ») ; puis tester un appel (état « half-open ») ; reprendre si OK (état « fermé »)</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <h4>Livrable attendu</h4>
+    <p>Remplir le tableau suivant :</p>
+    <table>
+      <thead>
+        <tr><th>Composant</th><th>Défi</th><th>Risque concret</th><th>Proposition de solution</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Auth Service</td><td>Disponibilité</td><td>Si Auth tombe, personne ne peut se connecter → tout le système est bloqué</td><td>Réplication (2 instances), cache de tokens JWT côté API Gateway</td></tr>
+        <tr><td>Stockage Service</td><td>Cohérence</td><td>Un document uploadé mais pas encore indexé → invisible en recherche</td><td>File de messages pour la synchronisation, cohérence éventuelle acceptable</td></tr>
+        <tr><td>Recherche Service</td><td>Latence</td><td>L'indexation de gros documents peut être lente, bloquant le retour à l'utilisateur</td><td>Indexation asynchrone (file de messages), cache des recherches fréquentes</td></tr>
+        <tr><td><em>(à compléter…)</em></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  
+    <div class="card success">
+      <div class="card-title">✅ À retenir</div>
+      <p>Il n'y a pas de solution unique. Chaque pattern a des <strong>trade-offs</strong>. Le cache améliore la latence mais introduit des problèmes d'invalidation. La réplication améliore la disponibilité mais complexifie la cohérence. La file de messages découple les services mais ajoute de la latence de traitement. L'objectif est de <strong>choisir consciemment</strong> en fonction du contexte.</p>
+    </div>
+  
+    <!-- TP 5.3 -->
+    <h3>TP5.3 — Cartographie des surfaces d'attaque <span class="badge badge-time">30 min</span> <span class="badge badge-risk">Risques</span></h3>
+  
+    <h4>Objectif</h4>
+    <p>Identifier toutes les surfaces d'attaque de l'architecture SGDD et proposer des mesures de protection initiales.</p>
+  
+    <h4>Surfaces à analyser</h4>
+    <ul>
+      <li><strong>APIs externes</strong> : endpoints exposés aux utilisateurs (via API Gateway)</li>
+      <li><strong>Communications inter-services</strong> : appels HTTP/gRPC entre services internes</li>
+      <li><strong>Bases de données</strong> : accès aux données persistées (credentials, ports ouverts)</li>
+      <li><strong>Interface d'administration</strong> : accès aux dashboards, monitoring, déploiement</li>
+      <li><strong>Logs et traces</strong> : peuvent contenir des données sensibles (tokens, données utilisateur)</li>
+      <li><strong>Secrets et configuration</strong> : clés API, mots de passe DB, certificats TLS</li>
+      <li><strong>Dépendances externes</strong> : bibliothèques Python (pip), images Docker</li>
+    </ul>
+  
+    <h4>Mesures initiales à proposer</h4>
+    <ul>
+      <li><strong>AuthN/AuthZ</strong> : JWT vérifié à chaque service, pas seulement au Gateway</li>
+      <li><strong>Segmentation réseau</strong> : les DBs ne sont pas accessibles depuis l'extérieur</li>
+      <li><strong>Rate limiting</strong> : sur le Gateway ET sur chaque service critique</li>
+      <li><strong>Validation d'entrée</strong> : chaque service valide ses inputs (ne pas faire confiance au Gateway seul)</li>
+      <li><strong>Audit logs</strong> : journaliser tout accès aux documents (qui, quoi, quand, depuis où)</li>
+      <li><strong>Chiffrement</strong> : en transit (TLS/mTLS) et au repos (données sensibles chiffrées en DB)</li>
+    </ul>
+  
+    <h4>Livrable attendu — Matrice de sécurité</h4>
+    <table>
+      <thead>
+        <tr><th>Surface d'attaque</th><th>Menace principale</th><th>Contrôle proposé</th><th>Priorité</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>API externe (Gateway)</td><td>DDoS, injection, brute force auth</td><td>Rate limiting, WAF, validation entrée, lockout après N échecs</td><td>🔴 Critique</td></tr>
+        <tr><td>Inter-services (Auth↔Stockage)</td><td>MITM, usurpation d'identité de service</td><td>mTLS, vérification d'audience JWT</td><td>🔴 Critique</td></tr>
+        <tr><td>Base de données (PostgreSQL)</td><td>SQL injection, accès non autorisé</td><td>Requêtes paramétrées, credentials en vault, réseau privé</td><td>🔴 Critique</td></tr>
+        <tr><td>Administration</td><td>Accès non autorisé au monitoring/déploiement</td><td>VPN obligatoire, MFA, RBAC admin</td><td>🟠 Élevée</td></tr>
+        <tr><td>Logs</td><td>Fuite de données sensibles dans les logs</td><td>Masquage (PII, tokens), accès restreint aux logs</td><td>🟠 Élevée</td></tr>
+        <tr><td>Secrets (clés API, certificats)</td><td>Fuite dans le code source ou les variables d'env</td><td>Vault, rotation automatique, scan CI/CD</td><td>🔴 Critique</td></tr>
+        <tr><td>Dépendances (pip)</td><td>Supply chain attack (paquet malveillant)</td><td>pip-audit, lock files, SBOM, review des updates</td><td>🟡 Moyenne</td></tr>
+        <tr><td><em>(à compléter…)</em></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+  
+  <hr class="separator">
+  
+  <!-- ============================================================ -->
+  <!-- LAB SÉCURITÉ                                                  -->
+  <!-- ============================================================ -->
+  <section id="lab-securite">
+    <h2>🔒 Lab Sécurité (30 min) <span class="badge badge-zt">Zero Trust</span> <span class="badge badge-risk">Risques</span></h2>
+  
+    <h3>Mini Threat Modeling — Méthode STRIDE simplifiée</h3>
+    <p>Appliquez une version simplifiée de la méthode <strong>STRIDE</strong> à l'architecture SGDD :</p>
+  
+    <table>
+      <thead>
+        <tr><th>Catégorie STRIDE</th><th>Signification</th><th>Question à se poser</th><th>Exemple SGDD</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>S</strong>poofing</td>
+          <td>Usurpation d'identité</td>
+          <td>Un attaquant peut-il se faire passer pour un utilisateur ou un service légitime ?</td>
+          <td>Fabriquer un faux JWT pour accéder aux documents</td>
+        </tr>
+        <tr>
+          <td><strong>T</strong>ampering</td>
+          <td>Altération des données</td>
+          <td>Un attaquant peut-il modifier des données en transit ou au repos ?</td>
+          <td>Modifier un document pendant le transfert inter-services (MITM)</td>
+        </tr>
+        <tr>
+          <td><strong>R</strong>epudiation</td>
+          <td>Déni d'action</td>
+          <td>Un utilisateur peut-il nier avoir effectué une action ?</td>
+          <td>Supprimer un document et nier l'avoir fait (absence de logs)</td>
+        </tr>
+        <tr>
+          <td><strong>I</strong>nformation Disclosure</td>
+          <td>Fuite d'informations</td>
+          <td>Des données sensibles peuvent-elles être exposées ?</td>
+          <td>Logs contenant des tokens JWT en clair, erreurs détaillées en prod</td>
+        </tr>
+        <tr>
+          <td><strong>D</strong>enial of Service</td>
+          <td>Déni de service</td>
+          <td>Le système peut-il être rendu indisponible ?</td>
+          <td>DDoS sur l'API Gateway, upload de fichiers énormes</td>
+        </tr>
+        <tr>
+          <td><strong>E</strong>levation of Privilege</td>
+          <td>Élévation de privilèges</td>
+          <td>Un utilisateur peut-il obtenir des droits supérieurs ?</td>
+          <td>Modifier son JWT pour changer son rôle de "reader" à "admin"</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <h3>Checklist Zero Trust Readiness</h3>
+    <p>Évaluez votre architecture SGDD par rapport aux principes Zero Trust :</p>
+  
+    <ul class="checklist">
+      <li><strong>AuthN à chaque service</strong> : chaque service vérifie le token JWT (pas seulement le Gateway)</li>
+      <li><strong>AuthZ granulaire</strong> : les permissions sont vérifiées au niveau de chaque opération (lecture vs écriture vs suppression)</li>
+      <li><strong>Moindre privilège</strong> : le service Recherche n'a pas accès en écriture à la DB de Stockage</li>
+      <li><strong>Chiffrement en transit</strong> : TLS/mTLS entre tous les composants, y compris internes</li>
+      <li><strong>Chiffrement au repos</strong> : les documents sensibles sont chiffrés en base/stockage</li>
+      <li><strong>Segmentation réseau</strong> : les DBs sont dans un sous-réseau privé, non exposées</li>
+      <li><strong>Logs d'audit</strong> : chaque accès à un document est journalisé avec user, action, timestamp, IP</li>
+      <li><strong>Rotation des secrets</strong> : les credentials DB et clés JWT sont rotés régulièrement (ex: 30 jours)</li>
+      <li><strong>Validation d'entrée</strong> : chaque service valide ses inputs (types, tailles, formats)</li>
+      <li><strong>Limitation de débit</strong> : rate limiting configuré sur le Gateway ET sur les services critiques</li>
+      <li><strong>Scan de dépendances</strong> : exécution régulière de <code>pip-audit</code> ou équivalent en CI/CD</li>
+      <li><strong>Plan de réponse à incident</strong> : procédure documentée en cas de compromission</li>
+    </ul>
+  
+    <h3>Discussion — Compromission d'un microservice : que faire ?</h3>
+    <div class="card danger">
+      <div class="card-title">🚨 Scénario : le service Stockage est compromis</div>
+      <p>Un attaquant a exploité une vulnérabilité dans le service Stockage et exécute du code arbitraire. Il peut potentiellement lire tous les documents, accéder à la base MongoDB, et appeler les autres services internes.</p>
+    </div>
+  
+    <h4>Étapes de réponse (Containment → Eradication → Recovery)</h4>
+  
+    <table>
+      <thead>
+        <tr><th>Phase</th><th>Actions</th><th>Objectif</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Containment        (Confinement)</strong></td>
+          <td>
+            <ul>
+              <li>Isoler immédiatement le service Stockage du réseau (couper les règles réseau / namespace)</li>
+              <li>Révoquer tous les tokens/credentials utilisés par ce service</li>
+              <li>Bloquer les appels inter-services vers/depuis Stockage au niveau du Gateway et du service mesh</li>
+              <li>Activer le mode « dégradé » : les autres services retournent « service temporairement indisponible » pour les opérations liées au stockage</li>
+            </ul>
+          </td>
+          <td>Empêcher la propagation latérale de l'attaque</td>
+        </tr>
+        <tr>
+          <td><strong>Éradication</strong></td>
+          <td>
+            <ul>
+              <li>Analyser les logs du service compromis (quand ? comment ? quelles données accédées ?)</li>
+              <li>Identifier la vulnérabilité exploitée (CVE connue ? injection ? RCE ?)</li>
+              <li>Corriger la vulnérabilité (patch, mise à jour de dépendance)</li>
+              <li>Scanner les autres services pour vérifier qu'ils ne sont pas aussi compromis</li>
+              <li>Vérifier l'intégrité des données (documents modifiés ? exfiltrés ?)</li>
+            </ul>
+          </td>
+          <td>Supprimer la cause racine et évaluer l'étendue des dégâts</td>
+        </tr>
+        <tr>
+          <td><strong>Recovery (Rétablissement)</strong></td>
+          <td>
+            <ul>
+              <li>Redéployer le service Stockage depuis une image propre (pas de restauration de l'instance compromise)</li>
+              <li>Rotation de <strong>tous</strong> les secrets : credentials DB, clés JWT, certificats mTLS</li>
+              <li>Restaurer les données depuis un backup vérifié si nécessaire</li>
+              <li>Réactiver progressivement les connexions inter-services</li>
+              <li>Surveillance renforcée pendant 48-72h (alertes sur comportements anormaux)</li>
+            </ul>
+          </td>
+          <td>Remettre le système en état nominal de manière sûre</td>
+        </tr>
+        <tr>
+          <td><strong>Post-mortem</strong></td>
+          <td>
+            <ul>
+              <li>Rédiger un rapport d'incident (timeline, impact, actions)</li>
+              <li>Identifier les améliorations : pourquoi la compromission a été possible ? quelles alertes ont manqué ?</li>
+              <li>Mettre à jour les procédures, les règles de segmentation, les scans</li>
+              <li>Notifier les utilisateurs affectés si des données personnelles sont concernées (obligation RGPD : 72h)</li>
+            </ul>
+          </td>
+          <td>Apprendre de l'incident et renforcer la posture de sécurité</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <div class="card security">
+      <div class="card-title">🔐 Point cybersécurité — Pourquoi la rotation des secrets est critique</div>
+      <p>Quand un service est compromis, l'attaquant a potentiellement récupéré <strong>tous les secrets</strong> de ce service : mot de passe de la DB, clé de signature JWT, certificat mTLS, clés d'API de services tiers. Même après avoir corrigé la vulnérabilité et redéployé, si les secrets ne sont pas changés, l'attaquant <strong>peut toujours les utiliser</strong>. La rotation doit être <strong>immédiate et exhaustive</strong>.</p>
+    </div>
+  </section>
+  
+  <hr class="separator">
+  
+  <!-- ============================================================ -->
+  <!-- SYNTHÈSE — À RETENIR EN 10 POINTS                            -->
+  <!-- ============================================================ -->
+  <section id="synthese">
+    <h2>📝 Synthèse — À retenir en 10 points</h2>
+  
+    <div class="card success">
+      <div class="card-title">✅ Les 10 points essentiels de la Séance 5</div>
+      <ol>
+        <li><strong>Un système distribué</strong> = plusieurs composants sur plusieurs machines, communicant par messages, apparaissant comme un système unique.</li>
+        <li><strong>Pas d'horloge globale</strong> : chaque nœud a sa propre horloge, les timestamps ne sont pas directement comparables. Utiliser des horloges logiques ou NTP.</li>
+        <li><strong>Les pannes sont partielles</strong> : un composant peut tomber sans que les autres le sachent immédiatement. L'ambiguïté (mort vs lent vs partition) est le défi central.</li>
+        <li><strong>Théorème CAP</strong> : en cas de partition réseau, il faut choisir entre cohérence et disponibilité. Le choix dépend du cas d'usage et peut varier par opération.</li>
+        <li><strong>Trois architectures principales</strong> : Client-Serveur (simple, SPOF), Peer-to-Peer (résilient, complexe), Microservices (flexible, coûteux en ops).</li>
+        <li><strong>Idempotence + Retry + Timeout</strong> : le trio indispensable en distribué. Sans eux, les pannes transitoires deviennent des pannes permanentes ou des doublons.</li>
+        <li><strong>La surface d'attaque croît</strong> avec le nombre de services. Chaque endpoint, chaque communication inter-service, chaque DB est un vecteur potentiel.</li>
+        <li><strong>Zero Trust</strong> : ne faire confiance à aucun composant par défaut. AuthN/AuthZ à chaque service, moindre privilège, chiffrement partout, vérification continue.</li>
+        <li><strong>Patterns de résilience</strong> : cache, réplication, file de messages, circuit breaker, fallback — chacun résout un problème mais en introduit d'autres (trade-offs).</li>
+        <li><strong>La sécurité est « by design »</strong> : elle se pense dès l'architecture, pas en ajout tardif. Threat modeling, cartographie des surfaces d'attaque, et plan de réponse à incident sont des activités de conception.</li>
+      </ol>
+    </div>
+  </section>
+  
+  <hr class="separator">
+  
+  <!-- ============================================================ -->
+  <!-- MINI-QUIZ                                                     -->
+  <!-- ============================================================ -->
+  <section id="quiz">
+    <h2>❓ Mini-quiz (10 questions) <span class="badge badge-time">Évaluation</span></h2>
+    <p><em>Survolez ou cliquez sur chaque question pour révéler le corrigé. Ou bien cliquez sur le bouton ci-dessous pour tout afficher.</em></p>
+    <button onclick="document.getElementById('quiz').classList.toggle('show-all')" style="background:var(--primary);color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-size:0.95em;margin-bottom:18px;">Afficher / Masquer tous les corrigés</button>
+  
+    <!-- Q1 -->
+    <div class="quiz-item" tabindex="0">
+      <div class="question">Q1 — Quelle est la différence fondamentale entre parallélisme et distribution ?</div>
+      <div class="options">
+        <label><input type="radio" name="q1"> a) Le parallélisme utilise Python, la distribution utilise Java</label>
+        <label><input type="radio" name="q1"> b) Le parallélisme s'exécute sur la même machine (mémoire partagée), la distribution sur des machines différentes (communication par messages)</label>
+        <label><input type="radio" name="q1"> c) La distribution est toujours plus rapide que le parallélisme</label>
+        <label><input type="radio" name="q1"> d) Il n'y a pas de différence, ce sont des synonymes</label>
+      </div>
+      <div class="correction">
+        <strong>✅ Réponse : b)</strong> — Le parallélisme concerne l'exécution simultanée sur plusieurs cœurs/processeurs d'une même machine avec mémoire partagée possible. La distribution concerne des composants sur des machines distinctes qui communiquent uniquement par messages réseau. La distribution n'est pas nécessairement plus rapide (la latence réseau est un frein).
+      </div>
+    </div>
+  
+    <!-- Q2 -->
+    <div class="quiz-item" tabindex="0">
+      <div class="question">Q2 — Pourquoi l'absence d'horloge globale est-elle un problème en distribué ?</div>
+      <div class="options">
+        <label><input type="radio" name="q2"> a) Parce que les serveurs ne peuvent pas afficher l'heure</label>
+        <label><input type="radio" name="q2"> b) Parce qu'on ne peut pas ordonner les événements de manière fiable entre machines</label>
+        <label><input type="radio" name="q2"> c) Parce que Python ne supporte pas les fuseaux horaires</label>
+        <label><input type="radio" name="q2"> d) Parce que les horloges consomment trop de ressources CPU</label>
+      </div>
+      <div class="correction">
+        <strong>✅ Réponse : b)</strong> — Chaque machine a sa propre horloge qui dérive. Un événement A (sur la machine 1) peut avoir un timestamp postérieur à l'événement B (sur la machine 2) même si A s'est produit <em>avant</em> B en réalité. Cela rend impossible l'ordonnancement fiable des événements en se basant uniquement sur les timestamps. Les horloges logiques (Lamport) résolvent partiellement ce problème en capturant la causalité.
+      </div>
+    </div>
+  
+    <!-- Q3 -->
+    <div class="quiz-item" tabindex="0">
+      <div class="question">Q3 — Que dit le théorème CAP ?</div>
+      <div class="options">
+        <label><input type="radio" name="q3"> a) Il faut toujours choisir la cohérence plutôt que la disponibilité</label>
+        <label><input type="radio" name="q3"> b) On peut avoir Cohérence, Disponibilité et Tolérance aux partitions simultanément</label>
+        <label><input type="radio" name="q3"> c) En cas de partition réseau, il faut choisir entre cohérence et disponibilité</label>
+        <label><input type="radio" name="q3"> d) CAP ne s'applique qu'aux bases de données NoSQL</label>
+      </div>
+      <div class="correction">
+        <strong>✅ Réponse : c)</strong> — Le théorème CAP (Brewer, 2000) stipule qu'en cas de partition réseau (inévitable en distribué), il faut choisir entre cohérence (C) et disponibilité (A). En temps normal (pas de partition), on peut avoir les trois. Le choix peut être différent par opération (lectures AP, écritures CP). CAP s'applique à tout système distribué, pas seulement au NoSQL.
+      </div>
+    </div>
+  
+    <!-- Q4 -->
+    <div class="quiz-item" tabindex="0">
+      <div class="question">Q4 — Qu'est-ce que l'idempotence et pourquoi est-elle critique en distribué ?</div>
+      <div class="correction">
+        <strong>✅ Réponse (question courte) :</strong> Une opération est idempotente si l'exécuter une ou plusieurs fois produit le même résultat. C'est critique en distribué car le réseau peut perdre la réponse (pas la requête), forçant le client à réessayer (retry). Si l'opération n'est pas idempotente (ex: POST créant une ressource), le retry peut créer des doublons. Solution : clé d'idempotence (UUID unique par requête).
+      </div>
+    </div>
+  
+    <!-- Q5 -->
+    <div class="quiz-item" tabindex="0">
+      <div class="question">Q5 — Quel est le principal inconvénient du modèle Client-Serveur ?</div>
+      <div class="options">
+        <label><input type="radio" name="q5"> a) Il est trop complexe à implémenter</label>
+        <label><input type="radio" name="q5"> b) Il ne supporte pas le protocole HTTP</label>
+        <label><input type="radio" name="q5"> c) Le serveur est un point unique de défaillance (SPOF)</label>
+        <label><input type="radio" name="q5"> d) Les clients ne peuvent pas envoyer de données</label>
+      </div>
+      <div class="correction">
+        <strong>✅ Réponse : c)</strong> — Dans un modèle client-serveur simple, si le serveur tombe, tout le service est indisponible. C'est un Single Point of Failure (SPOF). Pour atténuer ce risque, on utilise la réplication, le load balancing et le failover automatique. Mais cela ajoute de la complexité et transforme progressivement l'architecture vers un modèle distribué.
+      </div>
+    </div>
+  
+    <!-- Q6 -->
+    <div class="quiz-item" tabindex="0">
+      <div class="question">Q6 — Qu'est-ce que le « Zero Trust » dans le contexte des microservices ?</div>
+      <div class="correction">
+        <strong>✅ Réponse (question courte) :</strong> Le modèle Zero Trust part du principe qu'aucun composant n'est fiable par défaut, même à l'intérieur du réseau. Chaque requête doit être authentifiée (AuthN) et autorisée (AuthZ), indépendamment de sa provenance. Les principes clés sont : moindre privilège, chiffrement en transit (mTLS), vérification continue, segmentation micro. Contrairement à l'approche « périmètre de confiance » (firewall), Zero Trust considère que le réseau interne est potentiellement hostile.
+      </div>
+    </div>
+  
+    <!-- Q7 -->
+    <div class="quiz-item" tabindex="0">
+      <div class="question">Q7 — Pourquoi le retry sans backoff exponentiel est-il dangereux ?</div>
+      <div class="options">
+        <label><input type="radio" name="q7"> a) Parce que Python ne supporte pas les boucles de retry</label>
+        <label><input type="radio" name="q7"> b) Parce que les retries immédiats en boucle peuvent surcharger un service déjà en difficulté (DDoS involontaire)</label>
+        <label><input type="radio" name="q7"> c) Parce que le backoff exponentiel est obligatoire par la RFC HTTP</label>
+        <label><input type="radio" name="q7"> d) Parce que le retry ne fonctionne qu'avec des bases de données</label>
+      </div>
+      <div class="correction">
+        <strong>✅ Réponse : b)</strong> — Si un service est lent ou surchargé et que tous les clients retentent immédiatement, la charge sur le service explose → le service qui avait une chance de se rétablir est définitivement surchargé. Le backoff exponentiel espace les retries (0.5s, 1s, 2s, 4s…) et le jitter évite que tous les clients retentent au même moment (« thundering herd »).
+      </div>
+    </div>
+  
+    <!-- Q8 -->
+    <div class="quiz-item" tabindex="0">
+      <div class="question">Q8 — Quelle est la différence entre cohérence forte et cohérence éventuelle ?</div>
+      <div class="correction">
+        <strong>✅ Réponse (question courte) :</strong> <strong>Cohérence forte :</strong> après une écriture confirmée, toute lecture retourne cette écriture, quel que soit le nœud interrogé. Le système se comporte comme une copie unique. Coût : latence élevée (synchronisation). <strong>Cohérence éventuelle :</strong> après une écriture, les réplicas finiront par converger, mais il peut y avoir un délai (fenêtre d'incohérence) pendant lequel des lectures retournent d'anciennes valeurs. Avantage : meilleure disponibilité et latence. Choix selon le cas d'usage : virement bancaire → forte ; compteur de likes → éventuelle.
+      </div>
+    </div>
+  
+    <!-- Q9 -->
+    <div class="quiz-item" tabindex="0">
+      <div class="question">Q9 — Qu'est-ce qu'un circuit breaker et à quoi sert-il ?</div>
+      <div class="options">
+        <label><input type="radio" name="q9"> a) Un composant électronique qui protège les serveurs physiques</label>
+        <label><input type="radio" name="q9"> b) Un pattern qui coupe les appels vers un service défaillant pour éviter la cascade de pannes</label>
+        <label><input type="radio" name="q9"> c) Un type de firewall réseau</label>
+        <label><input type="radio" name="q9"> d) Un outil de monitoring des performances</label>
+      </div>
+      <div class="correction">
+        <strong>✅ Réponse : b)</strong> — Le circuit breaker a trois états : <strong>fermé</strong> (appels normaux), <strong>ouvert</strong> (appels bloqués après N échecs consécutifs — le service reçoit un fallback/erreur immédiate), <strong>half-open</strong> (un appel test est envoyé ; si OK, retour à fermé ; sinon, reste ouvert). Analogie : le disjoncteur électrique coupe le courant pour éviter de griller tout le circuit. En microservices, il empêche un service mort d'entraîner tous les autres dans sa chute.
+      </div>
+    </div>
+  
+    <!-- Q10 -->
+    <div class="quiz-item" tabindex="0">
+      <div class="question">Q10 — Citez trois menaces spécifiques aux systèmes distribués et une mesure de protection pour chacune.</div>
+      <div class="correction">
+        <strong>✅ Réponse (question courte) :</strong> Exemples parmi d'autres :
+        <ul>
+          <li><strong>DDoS</strong> → Rate limiting, auto-scaling, CDN avec protection DDoS</li>
+          <li><strong>MITM (Man-in-the-Middle)</strong> → mTLS entre tous les services (chiffrement + authentification mutuelle)</li>
+          <li><strong>Compromission d'un microservice</strong> → Segmentation réseau, moindre privilège, monitoring comportemental</li>
+          <li><strong>Supply chain attack</strong> → Audit des dépendances (pip-audit), lock files, SBOM</li>
+          <li><strong>Secrets leak</strong> → Vault pour les secrets, rotation automatique, scan de secrets en CI/CD</li>
+          <li><strong>SSRF</strong> → Validation stricte des URLs, whitelist de destinations</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  
+  <hr class="separator">
+  
+  <!-- ============================================================ -->
+  <!-- LIVRABLES & CRITÈRES D'ÉVALUATION                            -->
+  <!-- ============================================================ -->
+  <section id="livrables">
+    <h2>📦 Livrables &amp; Critères d'évaluation</h2>
+  
+    <h3>Livrables attendus</h3>
+    <table>
+      <thead>
+        <tr><th>Livrable</th><th>Source</th><th>Format</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Schéma d'architecture</strong> (logique + physique)</td>
+          <td>TP5.1</td>
+          <td>Diagramme (papier, ASCII, outil de dessin) + description textuelle (5-10 lignes)</td>
+        </tr>
+        <tr>
+          <td><strong>Rapport d'analyse des défis distribués</strong></td>
+          <td>TP5.2</td>
+          <td>Tableau « Composant | Défi | Risque | Proposition » (minimum 5 lignes complétées)</td>
+        </tr>
+        <tr>
+          <td><strong>Cartographie des surfaces d'attaque</strong></td>
+          <td>TP5.3</td>
+          <td>Matrice « Surface | Menace | Contrôle | Priorité » (minimum 6 lignes complétées)</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <h3>Critères d'évaluation</h3>
+    <table>
+      <thead>
+        <tr><th>Critère</th><th>Pondération</th><th>Indicateurs</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Compréhension des concepts distribués</strong></td>
+          <td>40%</td>
+          <td>
+            <ul>
+              <li>Utilisation correcte du vocabulaire (cohérence, partition, latence, transparence)</li>
+              <li>Distinction claire entre les modèles de cohérence</li>
+              <li>Application pertinente du théorème CAP au cas d'usage</li>
+              <li>Compréhension des pannes partielles et de l'ambiguïté réseau</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Pertinence de l'architecture proposée</strong></td>
+          <td>30%</td>
+          <td>
+            <ul>
+              <li>Identification correcte des composants et de leurs responsabilités</li>
+              <li>Choix justifié des protocoles de communication</li>
+              <li>Prise en compte des patterns de résilience (cache, retry, fallback…)</li>
+              <li>Cohérence entre architecture logique et physique</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Identification des risques sécurité</strong></td>
+          <td>30%</td>
+          <td>
+            <ul>
+              <li>Cartographie complète des surfaces d'attaque</li>
+              <li>Menaces identifiées réalistes et spécifiques au contexte distribué</li>
+              <li>Mesures de protection proportionnées et techniquement cohérentes</li>
+              <li>Application des principes Zero Trust</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <div class="card info">
+      <div class="card-title">📌 Barème indicatif</div>
+      <table>
+        <thead>
+          <tr><th>Note</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>A (Excellent)</strong></td><td>Architecture bien structurée, analyse complète des défis avec trade-offs argumentés, cartographie sécurité exhaustive avec priorisation justifiée. Vocabulaire précis, exemples pertinents.</td></tr>
+          <tr><td><strong>B (Bien)</strong></td><td>Architecture correcte, principaux défis identifiés, mesures de sécurité pertinentes mais parfois incomplètes. Quelques imprécisions terminologiques.</td></tr>
+          <tr><td><strong>C (Passable)</strong></td><td>Architecture basique (composants identifiés mais interactions floues), analyse superficielle des défis, mesures de sécurité génériques sans adaptation au contexte.</td></tr>
+          <tr><td><strong>D (Insuffisant)</strong></td><td>Confusion entre les concepts (concurrence/distribution, cohérence forte/éventuelle), architecture incohérente, absence d'analyse sécurité.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  
+  <hr class="separator">
+  
+  <!-- ============================================================ -->
+  <!-- PERSPECTIVE SÉANCE 6                                          -->
+  <!-- ============================================================ -->
+  <section id="perspective">
+    <h2>🔮 Perspective — Séance 6</h2>
+    <div class="card info">
+      <div class="card-title">📅 Ce qui vous attend à la prochaine séance</div>
+      <p>La Séance 6 approfondira la <strong>communication entre composants distribués</strong> :</p>
+      <ul>
+        <li><strong>Files de messages</strong> (RabbitMQ, Redis Pub/Sub) : communication asynchrone, découplage, gestion des pics de charge</li>
+        <li><strong>gRPC</strong> : communication inter-services performante, contrats stricts (Protocol Buffers), streaming</li>
+        <li><strong>Patterns Pub/Sub et Event-Driven</strong> : architectures réactives, event sourcing (introduction)</li>
+        <li><strong>Implémentation Python</strong> : exemples concrets avec <code>asyncio</code>, files Redis, et appels gRPC</li>
+        <li><strong>Sécurité des canaux de communication</strong> : chiffrement des messages, authentification des producteurs/consommateurs</li>
+      </ul>
+      <p><strong>Pré-requis :</strong> avoir terminé les livrables de la Séance 5 (architecture + analyse défis + cartographie sécurité).</p>
+    </div>
+  </section>
+  
+  <!-- ============================================================ -->
+  <!-- FOOTER                                                        -->
+  <!-- ============================================================ -->
+  <footer style="text-align:center;padding:30px 20px;margin-top:40px;border-top:2px solid var(--border);color:var(--text-light);font-size:0.88em;">
+    <p><strong>Module : Applications Réparties et Cybersécurité</strong></p>
+    <p>Séance 5 — Concepts des Systèmes Distribués (Python) — Durée : 4h (240 min)</p>
+    <p style="margin-top:8px;font-size:0.82em;">Document pédagogique — Usage académique — Tous droits réservés</p>
+  </footer>
+  
+  </div><!-- /.container -->
+  </body>
+  </html>

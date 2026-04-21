@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport de TP : Architecture Serveur-Client HTTP</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        header p {
+            margin: 0.5rem 0 0;
+            font-size: 1.2rem;
+            color: #ddd;
+        }
+
+        .container {
+            width: 80%;
+            margin: 2rem auto;
+            background: #fff;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h2 {
+            color: #203a43;
+            border-bottom: 2px solid #203a43;
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        h3 {
+            color: #2c5364;
+        }
+
+        ul {
+            list-style-type: square;
+        }
+
+        .code-block,
+        .output-block {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .output-block {
+            background: #1e1e1e;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .highlight {
+            color: #f1fa8c;
+        }
+
+        .error {
+            color: #ff5555;
+        }
+
+        .success {
+            color: #50fa7b;
+        }
+
+        .conclusion {
+            background: #e8f4f8;
+            padding: 1.5rem;
+            border-left: 5px solid #203a43;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Rapport de Travaux Pratiques</h1>
+        <p>Analyse de l'Architecture Serveur-Client HTTP (REST/JSON)</p>
+        <p style="margin-top: 1rem; font-weight: bold; color: #f1fa8c;">Réalisé par : Hamza khchichine (Groupe 1)</p>
+    </header>
+    <div class="container">
+        <h2>Introduction</h2>
+        <p>Ce rapport présente l'analyse des travaux pratiques portant sur la mise en place d'une communication
+            client-serveur classique sous le protocole HTTP. Nous avons étudié et corrigé deux scripts en Python : un
+            serveur HTTP minimaliste fournissant une API REST (<code>Server.py</code>), et un client HTTP requêtant
+            cette API avec une gestion des temps d'attente réseau (<code>client.py</code>).</p>
+
+        <h2>1. Analyse du Serveur (Server.py)</h2>
+        <p>Le script <code>Server.py</code> utilise la bibliothèque standard <code>http.server</code> de Python pour
+            implémenter un serveur web sur l'adresse <code>127.0.0.1:8000</code>.</p>
+        <h3>Fonctionnalités Clés :</h3>
+        <ul>
+            <li><strong>Simulation de Base de Données :</strong> Une structure de données en mémoire (dictionnaire) est
+                utilisée pour simuler une collection de documents.</li>
+            <li><strong>API REST JSON :</strong> Le serveur répond aux requêtes <code>GET</code> sur les routes
+                <code>/documents</code> (pour lister tous les documents) et <code>/documents/{id}</code> (pour récupérer
+                un document spécifique). Il renvoie les données au format <code>application/json</code>.
+            </li>
+            <li><strong>Simulation de Latence Réseau :</strong> Pour reproduire les conditions du monde réel (comme la
+                charge réseau ou serveur), le serveur introduit un délai artificiel aléatoire (via
+                <code>time.sleep()</code>) pouvant aller de 0 à 2 secondes avant de répondre.
+            </li>
+        </ul>
+        <h3>Observations issues de la navigation Web (Capture 1) :</h3>
+        <p>La première capture d'écran montre le résultat de la requête GET sur
+            <code>http://127.0.0.1:8000/documents</code> depuis Mozilla Firefox (ou interface web de type visualiseur
+            JSON). Le serveur a bien répondu avec un flux JSON correctement formaté représentant l'intégralité des
+            documents, avec une coloration syntaxique des structures : les clés, les valeurs numériques (id) et les
+            chaînes de caractères (titre et auteur des documents comme "Rapport Q3" par "Alice").
+        </p>
+        <div style="text-align: center; margin: 2rem 0;">
+            <img src="browser_capture.png" alt="Capture d'écran du navigateur montrant le flux JSON"
+                style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>Figure 1 : Rendu JSON dans le navigateur
+                    (veuillez sauvegarder l'image en tant que `browser_capture.png` dans ce dossier)</em></p>
+        </div>
+
+        <h2>2. Analyse du Client (client.py)</h2>
+        <p>Le script <code>client.py</code> exploite le module natif <code>urllib.request</code> pour interagir avec le
+            serveur. L'objectif était d'appeler plusieurs fois l'API afin de visualiser la gestion de la latence de
+            manière client.</p>
+        <h3>Fonctionnalités Clés :</h3>
+        <ul>
+            <li><strong>Requêtes répétées :</strong> Le client demande le document d'ID <code>1</code> à 5 reprises au
+                cours d'une boucle.</li>
+            <li><strong>Fixation d'un délai d'attente (Timeout) :</strong> Les requêtes réseau peuvent bloquer
+                l'exécution indéfiniment si le serveur ne répond jamais. Le client intègre un mécanisme de sécurité
+                (<code>TIMEOUT_SECONDS = 1.5</code>) déclenchant une exception réseau si le serveur tarde.</li>
+            <li><strong>Gestion d'Exceptions Renforcée :</strong> Afin d'éviter un plantage, le client a été corrigé
+                pour intercepter correctement le <code>TimeoutError</code> (qui remonte depuis le socket Python
+                bas-niveau) ainsi que l'<code>urllib.error.URLError</code>.</li>
+        </ul>
+
+        <h2>3. Analyse des Résultats d'Exécution Terminal (Capture 2 & Console)</h2>
+        <p>La deuxième capture et nos exécutions montrent les logs générés par le client dans un terminal intégré de
+            type VS Code. L'encodage a par ailleurs été corrigé pour empêcher la console de générer des conflits
+            d'unicode sous Windows (les emojis et accents ont été retirés).</p>
+        <p>Plusieurs scénarios se présentent aléatoirement pour chaque requête à cause de la latence simulée côté
+            serveur :</p>
+        <div class="output-block">
+            <span class="success">Reponse recue en 1.10s<br>Donnees : {'id': 1, 'titre': 'Rapport Q3',
+                ...}</span><br><br>
+            <span class="error">TIMEOUT apres 1.60s - le serveur est trop lent !</span>
+        </div>
+        <ul>
+            <li><strong>Requêtes rapides (Latence &lt; 1.5s) :</strong> Le client reçoit la réponse à temps, décode
+                correctement le JSON en dictionnaire Python, et affiche avec succès le document reçu en mesurant le
+                temps exact.</li>
+            <li><strong>Requêtes lentes (Latence &gt; 1.5s) :</strong> Le serveur bloque au-delà du timeout accordé au
+                client. Le mécanisme limitatif de <code>timeout=1.5</code> coupe la connexion locale de façon fiable et
+                affiche fièrement : <i>TIMEOUT apres [X]s</i>.</li>
+            <li><em>Remarque d'entrelacement :</em> Sur la deuxième capture d'écran de l'affichage terminal, on observe
+                que certaines informations se mélangent parfois sur la même ligne (ex: "...Rapport Q3'...TIMEOUT
+                apres..."). Il s'agit d'un problème d'entrelacement (buffering) lié aux logs émis simultanément depuis
+                les différents scripts (client/serveur) dans le même terminal virtuel.</li>
+        </ul>
+
+        <h2>4. Analyse de l'Exemple 2 : Retry avec Backoff Exponentiel</h2>
+        <p>Le script <code>client_retry.py</code> implémente un client HTTP robuste capable de relancer une requête
+            échouée de manière espacée.</p>
+        <h3>Fonctionnalités Clés :</h3>
+        <ul>
+            <li><strong>Idempotence et Retry :</strong> Lors d'une erreur (timeout ou réseau), le client effectue
+                jusqu'à 4 tentatives.</li>
+            <li><strong>Backoff Exponentiel avec Jitter :</strong> Le temps d'attente entre chaque échec est doublé
+                (0.5s, 1s, etc.) et couplé à une valeur aléatoire (jitter) pour éviter de surcharger globalement le
+                serveur.</li>
+        </ul>
+        <h3>Observations de l'exécution sur Terminal :</h3>
+        <div class="output-block" style="line-height:1.4;">
+            <span class="highlight">Appel avec retry + backoff exponentiel :</span><br>
+            <span class="error"> Tentative 1/4...<br> Echec : &lt;urlopen error [WinError 10061]...&gt;<br> Attente
+                0.62s avant retry...</span><br>
+            <span class="error"> Tentative 2/4...<br> Echec : TimeoutError<br> Attente 1.15s avant retry...</span><br>
+            <span class="success"> Tentative 3/4...<br> Succes a la tentative 3</span><br><br>
+            <span class="success">Document recupere : {'id': 2, 'titre': 'Plan stratigique', 'auteur': 'Bob'}</span>
+        </div>
+        <p>Le terminal montre clairement l'escalade du temps d'attente généré aléatoirement avant un succès, stabilisant
+            les échanges entre le client et un serveur défaillant.</p>
+
+        <h2>5. Analyse de l'Exemple 3 : Appels Asynchrones</h2>
+        <p>Le script <code>client_async.py</code> démontre l'intérêt de la parallélisation des requêtes réseau grâce au
+            module <code>asyncio</code>.</p>
+        <h3>Fonctionnalités Clés :</h3>
+        <ul>
+            <li><strong>Programmation par Coroutines :</strong> Simulation de l'appel de multiples microservices en
+                attente d'IO (Auth, Stockage, Recherche) via <code>async/await</code>.</li>
+            <li><strong>Gain de latence réseau :</strong> Contraste frappant entre une boucle chronologique
+                (séquentielle) et une exécution groupée via <code>asyncio.gather()</code>.</li>
+        </ul>
+        <h3>Observations de l'exécution sur Terminal :</h3>
+        <div class="output-block" style="line-height:1.4;">
+            <span class="highlight">-- Appels SEQUENTIELS --</span><br>
+            Appel a Auth (latence prevue : 0.5s)... Auth a repondu !<br>
+            Appel a Stockage (latence prevue : 0.8s)... Stockage a repondu !<br>
+            Appel a Recherche (latence prevue : 0.3s)... Recherche a repondu !<br>
+            <span class="error"> Temps total sequentiel : 1.61s</span><br><br>
+
+            <span class="highlight">-- Appels PARALLELES (asyncio.gather) --</span><br>
+            Appel a Auth (latence prevue : 0.5s)...<br>
+            Appel a Stockage (latence prevue : 0.8s)...<br>
+            Appel a Recherche (latence prevue : 0.3s)...<br>
+            Recherche a repondu !<br>
+            Auth a repondu !<br>
+            Stockage a repondu !<br>
+            <span class="success"> Temps total parallele : 0.80s</span>
+        </div>
+        <p>Comme le montrent les logs, les appels parallèles abaissent considérablement le temps de réponse total
+            puisqu'il correspond uniquement au <strong>maximum des latences individuelles (0.8s)</strong> et non plus à
+            la somme de toutes les latences enchaînées (1.61s).</p>
+
+        <div class="conclusion">
+            <h3>Conclusion Générale</h3>
+            <p>Ce TP démontre efficacement les fondements des architectures Micro-services / API REST. La mise en œuvre
+                illustre la découple entre un backend qui héberge la ressource et un backend/client qui la consomme.</p>
+            <p>Par-dessus tout, l'accent a été mis sur la gestion d'erreurs cruciales : la résolution de problèmes
+                d'échappement (Unicode et indentation Python) et, surtout, <strong>la gestion proactive des
+                    timeouts</strong>. Fixer des limites de temps aux requêtes est indispensable pour concevoir des
+                applications résilientes, permettant à un client de ne pas bloquer complètement si l'un de ses services
+                externes vient à ralentir dramatiquement.</p>
+        </div>
+    </div>
+</body>
+
+</html>

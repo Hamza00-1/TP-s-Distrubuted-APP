@@ -1,0 +1,2761 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Séance 6 — Communication, APIs et Fiabilité (Python)</title>
+<style>
+  :root {
+    --primary: #1a237e;
+    --primary-light: #3949ab;
+    --secondary: #00897b;
+    --accent: #ff6f00;
+    --danger: #c62828;
+    --warning: #f9a825;
+    --success: #2e7d32;
+    --bg: #f5f5f5;
+    --card-bg: #ffffff;
+    --text: #212121;
+    --text-light: #616161;
+    --border: #e0e0e0;
+    --code-bg: #263238;
+    --code-text: #eeffff;
+    --api-badge: #1565c0;
+    --fiab-badge: #6a1b9a;
+    --sec-badge: #c62828;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: #fff;
+    padding: 40px 0;
+    margin-bottom: 30px;
+    border-bottom: 4px solid var(--accent);
+  }
+  header .container { text-align: center; }
+  header h1 { font-size: 2em; margin-bottom: 10px; letter-spacing: 1px; }
+  header .subtitle { font-size: 1.15em; opacity: 0.92; margin-bottom: 18px; }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .meta-item {
+    background: rgba(255,255,255,0.13);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.97em;
+  }
+  .meta-item strong { display: block; font-size: 0.82em; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; margin-bottom: 2px; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 3px 13px;
+    border-radius: 14px;
+    font-size: 0.82em;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #fff;
+    margin: 2px 3px;
+    vertical-align: middle;
+  }
+  .badge-api { background: var(--api-badge); }
+  .badge-fiab { background: var(--fiab-badge); }
+  .badge-sec { background: var(--sec-badge); }
+  .badge-concept { background: var(--secondary); }
+
+  /* Sections */
+  section {
+    background: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    margin-bottom: 28px;
+    padding: 32px 36px;
+  }
+  h2 {
+    color: var(--primary);
+    font-size: 1.55em;
+    border-bottom: 3px solid var(--primary-light);
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+  }
+  h3 {
+    color: var(--primary-light);
+    font-size: 1.22em;
+    margin: 22px 0 10px 0;
+  }
+  h4 {
+    color: var(--secondary);
+    font-size: 1.07em;
+    margin: 16px 0 8px 0;
+  }
+
+  p { margin-bottom: 12px; }
+  ul, ol { margin: 10px 0 14px 28px; }
+  li { margin-bottom: 5px; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 20px 0;
+    font-size: 0.95em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 10px 13px;
+    text-align: left;
+  }
+  th {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.92em;
+    letter-spacing: 0.3px;
+  }
+  tr:nth-child(even) { background: #f4f6fb; }
+  tr:hover { background: #e8eaf6; }
+
+  /* Callout boxes */
+  .callout {
+    border-left: 5px solid;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 18px 0;
+    font-size: 0.97em;
+  }
+  .callout-title {
+    font-weight: 800;
+    font-size: 1em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .callout-retenir {
+    border-color: var(--success);
+    background: #e8f5e9;
+  }
+  .callout-retenir .callout-title { color: var(--success); }
+  .callout-piege {
+    border-color: var(--danger);
+    background: #ffebee;
+  }
+  .callout-piege .callout-title { color: var(--danger); }
+  .callout-secu {
+    border-color: var(--sec-badge);
+    background: #fce4ec;
+  }
+  .callout-secu .callout-title { color: var(--sec-badge); }
+  .callout-exemple {
+    border-color: var(--api-badge);
+    background: #e3f2fd;
+  }
+  .callout-exemple .callout-title { color: var(--api-badge); }
+  .callout-info {
+    border-color: var(--secondary);
+    background: #e0f2f1;
+  }
+  .callout-info .callout-title { color: var(--secondary); }
+
+  /* Code */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 18px 22px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.93em;
+    line-height: 1.6;
+    margin: 14px 0 18px 0;
+    font-family: 'Fira Mono', 'Consolas', 'Monaco', monospace;
+  }
+  code {
+    font-family: 'Fira Mono', 'Consolas', 'Monaco', monospace;
+    font-size: 0.95em;
+  }
+  p code, li code, td code {
+    background: #e8eaf6;
+    color: var(--primary);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.92em;
+  }
+
+  .code-comment { color: #546e7a; font-style: italic; }
+  .code-keyword { color: #c792ea; }
+  .code-string { color: #c3e88d; }
+  .code-number { color: #f78c6c; }
+  .code-func { color: #82aaff; }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+    margin: 16px 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--primary-light);
+    border-radius: 2px;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 18px;
+    padding: 12px 18px;
+    background: #e8eaf6;
+    border-radius: 8px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -23px;
+    top: 16px;
+    width: 13px;
+    height: 13px;
+    background: var(--primary-light);
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px var(--primary-light);
+  }
+  .timeline-time {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.92em;
+  }
+  .timeline-label { margin-top: 3px; }
+
+  /* SVG containers */
+  .figure-container {
+    text-align: center;
+    margin: 22px 0;
+  }
+  .figure-container svg {
+    max-width: 100%;
+    height: auto;
+  }
+  .figure-caption {
+    font-size: 0.88em;
+    color: var(--text-light);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* Quiz */
+  .quiz-question {
+    background: #f3e5f5;
+    border-left: 4px solid var(--fiab-badge);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 12px 0;
+  }
+  .quiz-question strong { color: var(--fiab-badge); }
+  .quiz-options { margin: 8px 0 0 18px; }
+  .quiz-options li { list-style-type: upper-alpha; margin-bottom: 3px; }
+  .quiz-answer {
+    background: #e8f5e9;
+    border-left: 4px solid var(--success);
+    padding: 10px 16px;
+    border-radius: 6px;
+    margin: 8px 0 16px 0;
+    font-size: 0.95em;
+  }
+  .quiz-answer strong { color: var(--success); }
+
+  /* Checklist */
+  .checklist { list-style: none; margin-left: 6px; }
+  .checklist li::before { content: '☐ '; font-size: 1.1em; }
+  .checklist li.done::before { content: '☑ '; color: var(--success); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    section { padding: 20px 16px; }
+    header h1 { font-size: 1.4em; }
+    .meta-grid { grid-template-columns: 1fr; }
+    pre { font-size: 0.82em; padding: 12px; }
+  }
+
+  /* Barème */
+  .bareme-bar {
+    height: 24px;
+    border-radius: 12px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  /* Print */
+  @media print {
+    body { font-size: 12px; }
+    section { box-shadow: none; page-break-inside: avoid; }
+    header { background: var(--primary) !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<header>
+  <div class="container">
+    <h1>Séance 6 — Communication, APIs et Fiabilité</h1>
+    <div class="subtitle">Module : Applications Réparties et Cybersécurité &nbsp;|&nbsp; Python uniquement</div>
+    <div class="meta-grid">
+      <div class="meta-item">
+        <strong>Durée</strong>
+        4 h (240 min)
+      </div>
+      <div class="meta-item">
+        <strong>Public</strong>
+        Ingénieur / Licence avancée — bases Python
+      </div>
+      <div class="meta-item">
+        <strong>Pré-requis</strong>
+        Sockets, HTTP (notions), JSON, IP/ports, notions auth (séance 5)
+      </div>
+      <div class="meta-item">
+        <strong>Mots-clés</strong>
+        <span class="badge badge-api">API</span>
+        <span class="badge badge-fiab">Fiabilité</span>
+        <span class="badge badge-sec">Sécurité</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ==================== OBJECTIFS ==================== -->
+<section id="objectifs">
+  <h2>🎯 Objectifs de la séance</h2>
+  <p>À l'issue de cette séance, l'étudiant sera capable de :</p>
+  <ul>
+    <li><strong>Comprendre les modes de communication</strong> (request/response vs messaging) et leurs impacts sur le couplage, la latence et la résilience d'un système distribué.</li>
+    <li><strong>Concevoir une API claire</strong> : contrats d'interface, gestion des erreurs, versioning, idempotence, pagination.</li>
+    <li><strong>Maîtriser les notions de fiabilité</strong> : timeouts, retries, backoff exponentiel, circuit breaker (concept), rate limiting.</li>
+    <li><strong>Analyser les risques cybersécurité liés aux APIs</strong> : authentification, autorisation, gestion des secrets, MITM, injection, replay, SSRF.</li>
+  </ul>
+
+  <div class="callout callout-retenir">
+    <div class="callout-title">📌 À retenir</div>
+    Dans un système distribué, la communication entre services <em>est</em> le système. Une API mal conçue ou non protégée est la première surface d'attaque et la première source de pannes.
+  </div>
+</section>
+
+<!-- ==================== DÉROULEMENT ==================== -->
+<section id="deroulement">
+  <h2>⏱ Déroulement détaillé (240 min)</h2>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-time">0 – 15 min &nbsp; (15 min)</div>
+      <div class="timeline-label"><strong>Réactivation (séance 5) + objectifs</strong> — Rappel architecture micro-services, découverte de service, patterns de communication vus en séance 5. Présentation des objectifs de la séance 6.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">15 – 90 min &nbsp; (75 min)</div>
+      <div class="timeline-label"><strong>Cours interactif</strong> — API design, patterns de fiabilité, modèles de communication, cybersécurité des APIs. Figures, tableaux, échanges.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">90 – 135 min &nbsp; (45 min)</div>
+      <div class="timeline-label"><strong>Live coding Python</strong> — Mini serveur HTTP, client avec timeout/retry, backoff exponentiel. Démonstrations commentées ligne par ligne.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">135 – 225 min &nbsp; (90 min)</div>
+      <div class="timeline-label"><strong>TP guidé — Fil rouge</strong> — Système de Gestion Documentaire Distribué : spécification d'API, politiques de fiabilité, matrice de sécurité.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-time">225 – 240 min &nbsp; (15 min)</div>
+      <div class="timeline-label"><strong>Quiz + synthèse</strong> — Mini-quiz 10 questions, récapitulatif, livrables à rendre.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== COURS PARTIE A ==================== -->
+<section id="cours-a">
+  <h2>A — Communication distribuée : panorama <span class="badge badge-api">API</span> <span class="badge badge-fiab">Fiabilité</span></h2>
+
+  <h3>A.1 — Appels synchrones vs asynchrones</h3>
+
+  <p>Dans un système distribué, deux grands paradigmes de communication coexistent :</p>
+
+  <table>
+    <tr>
+      <th>Critère</th>
+      <th>Synchrone (Request / Response)</th>
+      <th>Asynchrone (Messaging)</th>
+    </tr>
+    <tr>
+      <td><strong>Principe</strong></td>
+      <td>Le client envoie une requête et <em>attend</em> la réponse du serveur.</td>
+      <td>L'émetteur envoie un message et <em>continue</em> sans attendre de réponse immédiate.</td>
+    </tr>
+    <tr>
+      <td><strong>Protocole type</strong></td>
+      <td>HTTP/HTTPS, gRPC (unary)</td>
+      <td>AMQP, MQTT, Redis Pub/Sub, files de messages</td>
+    </tr>
+    <tr>
+      <td><strong>Couplage temporel</strong></td>
+      <td>Fort — les deux parties doivent être disponibles <em>en même temps</em></td>
+      <td>Faible — le producteur et le consommateur peuvent fonctionner indépendamment</td>
+    </tr>
+    <tr>
+      <td><strong>Couplage spatial</strong></td>
+      <td>Fort — le client doit connaître l'adresse du serveur</td>
+      <td>Faible — communication via un broker intermédiaire</td>
+    </tr>
+    <tr>
+      <td><strong>Latence perçue</strong></td>
+      <td>Directe (bloquante)</td>
+      <td>Indirecte (non bloquante)</td>
+    </tr>
+    <tr>
+      <td><strong>Complexité</strong></td>
+      <td>Simple à comprendre, simple à debugger</td>
+      <td>Plus complexe : ordering, delivery guarantees, dead letters</td>
+    </tr>
+    <tr>
+      <td><strong>Cas d'usage</strong></td>
+      <td>Lecture de données, opérations CRUD, APIs publiques</td>
+      <td>Événements, notifications, traitements longs, découplage fort</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-retenir">
+    <div class="callout-title">📌 À retenir</div>
+    Il n'y a pas de "meilleur" modèle. Le choix dépend du <strong>couplage acceptable</strong>, de la <strong>tolérance à la latence</strong> et de la <strong>criticité de la réponse immédiate</strong>. De nombreux systèmes réels combinent les deux.
+  </div>
+
+  <!-- Figure 1: Request/Response vs Messaging -->
+  <div class="figure-container">
+    <svg width="800" height="360" viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg">
+      <!-- Request/Response -->
+      <text x="200" y="25" text-anchor="middle" font-weight="bold" font-size="15" fill="#1a237e">Request / Response (Synchrone)</text>
+      <rect x="40" y="50" width="110" height="50" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2"/>
+      <text x="95" y="80" text-anchor="middle" font-size="13" fill="#1565c0" font-weight="bold">Client</text>
+      <rect x="260" y="50" width="110" height="50" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+      <text x="315" y="80" text-anchor="middle" font-size="13" fill="#2e7d32" font-weight="bold">Serveur</text>
+      <!-- Arrows -->
+      <line x1="150" y1="65" x2="255" y2="65" stroke="#1565c0" stroke-width="2" marker-end="url(#arrowBlue)"/>
+      <text x="203" y="58" text-anchor="middle" font-size="11" fill="#1565c0">requête HTTP</text>
+      <line x1="255" y1="90" x2="150" y2="90" stroke="#2e7d32" stroke-width="2" marker-end="url(#arrowGreen)"/>
+      <text x="203" y="108" text-anchor="middle" font-size="11" fill="#2e7d32">réponse JSON</text>
+      <text x="200" y="140" text-anchor="middle" font-size="11" fill="#616161">⏳ Le client est BLOQUÉ en attendant</text>
+
+      <!-- Messaging -->
+      <text x="600" y="25" text-anchor="middle" font-weight="bold" font-size="15" fill="#6a1b9a">Messaging (Asynchrone)</text>
+      <rect x="460" y="50" width="100" height="50" rx="8" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="2"/>
+      <text x="510" y="80" text-anchor="middle" font-size="13" fill="#6a1b9a" font-weight="bold">Producteur</text>
+      <rect x="610" y="50" width="100" height="50" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+      <text x="660" y="80" text-anchor="middle" font-size="13" fill="#e65100" font-weight="bold">Broker</text>
+      <rect x="610" y="130" width="100" height="50" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+      <text x="660" y="160" text-anchor="middle" font-size="13" fill="#2e7d32" font-weight="bold">Consom. A</text>
+      <rect x="610" y="200" width="100" height="50" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2"/>
+      <text x="660" y="230" text-anchor="middle" font-size="13" fill="#1565c0" font-weight="bold">Consom. B</text>
+      <!-- Arrows -->
+      <line x1="560" y1="75" x2="605" y2="75" stroke="#6a1b9a" stroke-width="2" marker-end="url(#arrowPurple)"/>
+      <text x="582" y="68" text-anchor="middle" font-size="10" fill="#6a1b9a">msg</text>
+      <line x1="660" y1="100" x2="660" y2="125" stroke="#e65100" stroke-width="2" marker-end="url(#arrowOrange)"/>
+      <line x1="680" y1="100" x2="680" y2="195" stroke="#e65100" stroke-width="2" marker-end="url(#arrowOrange)"/>
+      <text x="600" y="268" text-anchor="middle" font-size="11" fill="#616161">✅ Le producteur continue immédiatement</text>
+
+      <!-- Pub/Sub pattern -->
+      <text x="400" y="310" text-anchor="middle" font-weight="bold" font-size="14" fill="#1a237e">File de messages (Queue)</text>
+      <rect x="100" y="320" width="600" height="35" rx="6" fill="#fff8e1" stroke="#f9a825" stroke-width="1.5"/>
+      <text x="130" y="342" font-size="12" fill="#e65100">📨 msg1</text>
+      <text x="230" y="342" font-size="12" fill="#e65100">📨 msg2</text>
+      <text x="330" y="342" font-size="12" fill="#e65100">📨 msg3</text>
+      <text x="430" y="342" font-size="12" fill="#e65100">📨 msg4</text>
+      <text x="530" y="342" font-size="12" fill="#616161">… FIFO (ou priorité)</text>
+
+      <!-- Defs -->
+      <defs>
+        <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#1565c0"/></marker>
+        <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2e7d32"/></marker>
+        <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#6a1b9a"/></marker>
+        <marker id="arrowOrange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#e65100"/></marker>
+      </defs>
+    </svg>
+    <div class="figure-caption">Figure 1 — Comparaison Request/Response synchrone vs Messaging asynchrone (avec file de messages).</div>
+  </div>
+
+  <h3>A.2 — Les trois types de couplage</h3>
+
+  <p>Comprendre le couplage est essentiel pour arbitrer les choix d'architecture :</p>
+
+  <table>
+    <tr>
+      <th>Type de couplage</th>
+      <th>Définition</th>
+      <th>Exemple fort</th>
+      <th>Exemple faible</th>
+    </tr>
+    <tr>
+      <td><strong>Temporel</strong></td>
+      <td>Les deux parties doivent être actives <em>au même instant</em></td>
+      <td>Appel HTTP direct</td>
+      <td>Message dans une queue</td>
+    </tr>
+    <tr>
+      <td><strong>Spatial</strong></td>
+      <td>L'émetteur doit connaître l'adresse exacte du récepteur</td>
+      <td>URL en dur dans le code</td>
+      <td>Service discovery, broker</td>
+    </tr>
+    <tr>
+      <td><strong>Sémantique</strong></td>
+      <td>Les deux parties partagent un contrat de données (schéma)</td>
+      <td>Structures internes partagées</td>
+      <td>Contrat d'API versionné</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-piege">
+    <div class="callout-title">⚠️ Piège classique</div>
+    « On va tout passer en asynchrone pour découpler ! » — Attention : le messaging ajoute de la complexité (ordering, idempotence, dead-letter queues, monitoring). Chaque pattern résout un problème <em>et en crée d'autres</em>. Choisissez en conscience.
+  </div>
+
+  <h3>A.3 — Problèmes fondamentaux du réseau</h3>
+
+  <p>Le réseau est <strong>intrinsèquement non fiable</strong>. Les « 8 erreurs de l'informatique distribuée » (Peter Deutsch) rappellent qu'on ne peut jamais supposer que le réseau est fiable, sans latence, avec une bande passante infinie, etc. Voici les problèmes concrets :</p>
+
+  <table>
+    <tr>
+      <th>Problème</th>
+      <th>Description</th>
+      <th>Conséquence</th>
+      <th>Analogie</th>
+    </tr>
+    <tr>
+      <td><strong>Latence</strong></td>
+      <td>Délai entre l'envoi et la réception</td>
+      <td>Ralentissement, timeouts, mauvaise UX</td>
+      <td>Un courrier qui met 3 jours au lieu de 1</td>
+    </tr>
+    <tr>
+      <td><strong>Gigue (jitter)</strong></td>
+      <td>Variation de la latence d'un paquet à l'autre</td>
+      <td>Difficile de fixer un timeout optimal</td>
+      <td>Certains courriers arrivent en 1 jour, d'autres en 5</td>
+    </tr>
+    <tr>
+      <td><strong>Perte de paquets</strong></td>
+      <td>Des messages n'arrivent jamais</td>
+      <td>Données manquantes, incohérences</td>
+      <td>Courrier perdu par la poste</td>
+    </tr>
+    <tr>
+      <td><strong>Duplication</strong></td>
+      <td>Un message arrive deux fois</td>
+      <td>Double traitement (double débit, double inscription…)</td>
+      <td>Deux exemplaires du même courrier livrés</td>
+    </tr>
+    <tr>
+      <td><strong>Désordre</strong></td>
+      <td>Les messages arrivent dans un ordre différent de l'envoi</td>
+      <td>Incohérence d'état, conflits de données</td>
+      <td>Le chapitre 3 du livre arrive avant le chapitre 1</td>
+    </tr>
+    <tr>
+      <td><strong>Partition réseau</strong></td>
+      <td>Deux sous-groupes ne peuvent plus communiquer</td>
+      <td>Split-brain, décisions contradictoires</td>
+      <td>Deux bureaux de poste isolés par une tempête</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-retenir">
+    <div class="callout-title">📌 À retenir</div>
+    « Le réseau est fiable » est <strong>la première fausse hypothèse</strong> de l'informatique distribuée. Toute conception d'API et de client doit intégrer la possibilité de défaillance réseau.
+  </div>
+</section>
+
+<!-- ==================== COURS PARTIE B ==================== -->
+<section id="cours-b">
+  <h2>B — Conception d'API (niveau professionnel) <span class="badge badge-api">API</span></h2>
+
+  <h3>B.1 — Le contrat d'API</h3>
+
+  <p>Une API (Application Programming Interface) est un <strong>contrat</strong> entre un fournisseur de service et ses consommateurs. Ce contrat définit précisément :</p>
+  <ul>
+    <li><strong>Endpoints</strong> : les URL accessibles (ex : <code>/api/v1/documents</code>)</li>
+    <li><strong>Méthodes HTTP</strong> : GET, POST, PUT, DELETE, PATCH — chacune avec une sémantique précise</li>
+    <li><strong>Payloads</strong> : structure JSON des requêtes et réponses</li>
+    <li><strong>Codes de retour</strong> : 200, 201, 400, 401, 403, 404, 409, 429, 500, 503…</li>
+    <li><strong>Headers</strong> : Content-Type, Authorization, X-Request-Id…</li>
+    <li><strong>Comportements spéciaux</strong> : pagination, tri, filtrage, rate limiting</li>
+  </ul>
+
+  <table>
+    <tr>
+      <th>Méthode HTTP</th>
+      <th>Sémantique</th>
+      <th>Idempotente ?</th>
+      <th>Corps de requête ?</th>
+      <th>Utilisation typique</th>
+    </tr>
+    <tr>
+      <td><code>GET</code></td>
+      <td>Lire une ressource</td>
+      <td>✅ Oui</td>
+      <td>Non (paramètres dans l'URL)</td>
+      <td>Récupérer un document, une liste</td>
+    </tr>
+    <tr>
+      <td><code>POST</code></td>
+      <td>Créer une ressource</td>
+      <td>❌ Non (par défaut)</td>
+      <td>Oui</td>
+      <td>Créer un document, soumettre un formulaire</td>
+    </tr>
+    <tr>
+      <td><code>PUT</code></td>
+      <td>Remplacer une ressource entière</td>
+      <td>✅ Oui</td>
+      <td>Oui</td>
+      <td>Mettre à jour un document (remplacement total)</td>
+    </tr>
+    <tr>
+      <td><code>PATCH</code></td>
+      <td>Modifier partiellement une ressource</td>
+      <td>⚠️ Dépend</td>
+      <td>Oui</td>
+      <td>Mettre à jour un champ spécifique</td>
+    </tr>
+    <tr>
+      <td><code>DELETE</code></td>
+      <td>Supprimer une ressource</td>
+      <td>✅ Oui</td>
+      <td>Rarement</td>
+      <td>Supprimer un document</td>
+    </tr>
+  </table>
+
+  <h3>B.2 — Codes d'erreur HTTP : les connaître par cœur</h3>
+
+  <table>
+    <tr>
+      <th>Code</th>
+      <th>Signification</th>
+      <th>Quand l'utiliser</th>
+    </tr>
+    <tr><td><code>200</code></td><td>OK</td><td>Requête réussie (GET, PUT, PATCH)</td></tr>
+    <tr><td><code>201</code></td><td>Created</td><td>Ressource créée (POST réussi)</td></tr>
+    <tr><td><code>204</code></td><td>No Content</td><td>Succès sans corps de réponse (DELETE)</td></tr>
+    <tr><td><code>400</code></td><td>Bad Request</td><td>Payload invalide, champ manquant, format incorrect</td></tr>
+    <tr><td><code>401</code></td><td>Unauthorized</td><td>Authentification manquante ou invalide</td></tr>
+    <tr><td><code>403</code></td><td>Forbidden</td><td>Authentifié mais pas autorisé</td></tr>
+    <tr><td><code>404</code></td><td>Not Found</td><td>Ressource inexistante</td></tr>
+    <tr><td><code>409</code></td><td>Conflict</td><td>Conflit d'état (ressource déjà existante, version conflictuelle)</td></tr>
+    <tr><td><code>429</code></td><td>Too Many Requests</td><td>Rate limiting déclenché</td></tr>
+    <tr><td><code>500</code></td><td>Internal Server Error</td><td>Erreur côté serveur (bug, crash)</td></tr>
+    <tr><td><code>502</code></td><td>Bad Gateway</td><td>Le serveur intermédiaire a reçu une réponse invalide</td></tr>
+    <tr><td><code>503</code></td><td>Service Unavailable</td><td>Service temporairement indisponible (maintenance, surcharge)</td></tr>
+    <tr><td><code>504</code></td><td>Gateway Timeout</td><td>Le service en amont n'a pas répondu à temps</td></tr>
+  </table>
+
+  <div class="callout callout-piege">
+    <div class="callout-title">⚠️ Piège classique</div>
+    Ne renvoyez <strong>jamais</strong> <code>200 OK</code> avec un corps contenant <code>{"error": "..."}</code>. Utilisez les codes HTTP pour ce qu'ils sont. Un client automatisé se fie au code de statut, pas au contenu du body.
+  </div>
+
+  <h3>B.3 — Validation d'entrée (JSON)</h3>
+
+  <p>Toute donnée reçue de l'extérieur est <strong>potentiellement malveillante ou malformée</strong>. La validation d'entrée est une obligation, pas une option :</p>
+  <ul>
+    <li><strong>Vérifier la présence</strong> des champs obligatoires</li>
+    <li><strong>Vérifier les types</strong> (string, int, bool, array)</li>
+    <li><strong>Vérifier les contraintes</strong> (longueur max, format email, plage numérique)</li>
+    <li><strong>Rejeter l'inconnu</strong> : des champs inattendus peuvent être une tentative d'injection</li>
+  </ul>
+
+  <div class="callout callout-exemple">
+    <div class="callout-title">💡 Exemple concret</div>
+    Un endpoint <code>POST /documents</code> attend :
+<pre>{
+  "title": "string, requis, 1-200 caractères",
+  "content": "string, requis, max 50000 caractères",
+  "tags": "array de strings, optionnel, max 10 éléments",
+  "visibility": "string, requis, valeurs: 'public' | 'private' | 'team'"
+}</pre>
+    Si <code>title</code> est absent → <code>400</code>. Si <code>visibility</code> vaut <code>"admin_override"</code> → <code>400</code>. Aucun traitement ne doit commencer avant validation complète.
+  </div>
+
+  <h3>B.4 — Versioning d'API</h3>
+
+  <p>Les APIs évoluent. Comment gérer les changements sans casser les clients existants ?</p>
+
+  <table>
+    <tr>
+      <th>Stratégie</th>
+      <th>Exemple</th>
+      <th>Avantage</th>
+      <th>Inconvénient</th>
+    </tr>
+    <tr>
+      <td><strong>URI path</strong></td>
+      <td><code>/api/v1/documents</code> → <code>/api/v2/documents</code></td>
+      <td>Explicite, facile à comprendre et router</td>
+      <td>Duplication de code, URLs longues</td>
+    </tr>
+    <tr>
+      <td><strong>Header</strong></td>
+      <td><code>Accept: application/vnd.myapp.v2+json</code></td>
+      <td>URL propre, séparation contenu/version</td>
+      <td>Moins visible, plus complexe à tester</td>
+    </tr>
+    <tr>
+      <td><strong>Query param</strong></td>
+      <td><code>/api/documents?version=2</code></td>
+      <td>Simple à ajouter</td>
+      <td>Pollue l'URL, mélange version/données</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-retenir">
+    <div class="callout-title">📌 À retenir</div>
+    La stratégie URI path (<code>/api/v1/</code>) est la plus courante et la plus recommandée pour les APIs publiques. Quelle que soit la stratégie, documentez-la clairement et maintenez la rétrocompatibilité pendant une durée définie.
+  </div>
+
+  <h3>B.5 — Idempotence</h3>
+
+  <p><strong>Définition :</strong> Une opération est <strong>idempotente</strong> si l'appeler N fois produit le même résultat que l'appeler 1 fois. Le système converge vers le même état.</p>
+
+  <table>
+    <tr>
+      <th>Opération</th>
+      <th>Idempotente ?</th>
+      <th>Explication</th>
+    </tr>
+    <tr>
+      <td><code>GET /documents/42</code></td>
+      <td>✅ Oui</td>
+      <td>Lire 10 fois ne change rien à l'état</td>
+    </tr>
+    <tr>
+      <td><code>PUT /documents/42</code> (remplacement)</td>
+      <td>✅ Oui</td>
+      <td>Remplacer 10 fois par les mêmes données → même résultat</td>
+    </tr>
+    <tr>
+      <td><code>DELETE /documents/42</code></td>
+      <td>✅ Oui</td>
+      <td>Supprimer un document déjà supprimé → pas de changement</td>
+    </tr>
+    <tr>
+      <td><code>POST /documents</code></td>
+      <td>❌ Non</td>
+      <td>Chaque appel crée un <em>nouveau</em> document → duplication !</td>
+    </tr>
+    <tr>
+      <td><code>POST /documents</code> avec <code>Idempotency-Key</code></td>
+      <td>✅ Oui (si implémenté)</td>
+      <td>Le serveur détecte la duplication grâce à la clé unique</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-piege">
+    <div class="callout-title">⚠️ Piège classique</div>
+    <code>POST /account/debit {"amount": 100}</code> — Si le réseau est lent et que le client retente, le compte est débité <strong>deux fois</strong>. Solution : envoyer un <code>Idempotency-Key: abc-123</code> que le serveur stocke. Si la même clé revient, il retourne la réponse précédente sans exécuter l'opération à nouveau.
+  </div>
+
+  <h3>B.6 — Pagination, filtrage, tri</h3>
+
+  <p>Quand une collection contient des milliers d'éléments, il est impensable de tout retourner d'un coup. Trois mécanismes complémentaires :</p>
+
+  <ul>
+    <li><strong>Pagination</strong> : <code>GET /documents?page=2&amp;per_page=20</code> — Retourner les résultats par lots. Inclure dans la réponse : <code>total</code>, <code>page</code>, <code>per_page</code>, <code>total_pages</code>.</li>
+    <li><strong>Filtrage</strong> : <code>GET /documents?status=published&amp;author=alice</code> — Ne retourner que les éléments correspondants.</li>
+    <li><strong>Tri</strong> : <code>GET /documents?sort=created_at&amp;order=desc</code> — Contrôler l'ordre des résultats.</li>
+  </ul>
+
+  <div class="callout callout-secu">
+    <div class="callout-title">🔒 Point cybersécurité</div>
+    <strong>Pagination obligatoire</strong> : sans elle, un attaquant peut faire <code>GET /documents?per_page=999999</code> et vider la mémoire du serveur (DoS). Imposez un <code>per_page</code> maximum (ex : 100) côté serveur, quelle que soit la valeur demandée par le client.
+  </div>
+</section>
+
+<!-- ==================== COURS PARTIE C ==================== -->
+<section id="cours-c">
+  <h2>C — Fiabilité et résilience côté client <span class="badge badge-fiab">Fiabilité</span></h2>
+
+  <h3>C.1 — Timeouts : pourquoi ils sont indispensables</h3>
+
+  <p>Un timeout est une <strong>durée maximale</strong> au-delà de laquelle le client considère que la requête a échoué. Sans timeout :</p>
+  <ul>
+    <li>Le thread/processus client reste <strong>bloqué indéfiniment</strong></li>
+    <li>Les ressources (sockets, mémoire, connexions) s'accumulent → <strong>famine de ressources</strong></li>
+    <li>Un service lent contamine les services appelants → <strong>effet cascade</strong></li>
+  </ul>
+
+  <p><strong>Types de timeouts :</strong></p>
+  <table>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Valeur typique</th>
+    </tr>
+    <tr>
+      <td><strong>Connection timeout</strong></td>
+      <td>Temps max pour établir la connexion TCP</td>
+      <td>3-5 secondes</td>
+    </tr>
+    <tr>
+      <td><strong>Read timeout</strong></td>
+      <td>Temps max pour recevoir la réponse après connexion</td>
+      <td>5-30 secondes (selon l'opération)</td>
+    </tr>
+    <tr>
+      <td><strong>Total timeout</strong></td>
+      <td>Durée totale de l'opération incluant retries</td>
+      <td>30-120 secondes</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-retenir">
+    <div class="callout-title">📌 À retenir</div>
+    <strong>Toute requête réseau doit avoir un timeout.</strong> C'est une règle absolue en systèmes distribués. Un timeout trop court cause des faux échecs ; un timeout trop long cause des blocages. La juste valeur dépend du SLA du service appelé.
+  </div>
+
+  <h3>C.2 — Retries : quand c'est utile vs dangereux</h3>
+
+  <p>Retenter une requête échouée peut résoudre des problèmes transitoires (glitch réseau, redémarrage de service). Mais des retries mal gérés sont <strong>dangereux</strong> :</p>
+
+  <table>
+    <tr>
+      <th>Situation</th>
+      <th>Retry utile ?</th>
+      <th>Explication</th>
+    </tr>
+    <tr>
+      <td>Erreur <code>503</code> (service indisponible)</td>
+      <td>✅ Oui</td>
+      <td>Problème transitoire, retry après attente</td>
+    </tr>
+    <tr>
+      <td>Erreur <code>500</code> (erreur serveur)</td>
+      <td>⚠️ Dépend</td>
+      <td>Si le serveur a un bug, retenter n'aide pas</td>
+    </tr>
+    <tr>
+      <td>Erreur <code>429</code> (rate limited)</td>
+      <td>✅ Oui, après attente</td>
+      <td>Respecter le <code>Retry-After</code> header</td>
+    </tr>
+    <tr>
+      <td>Erreur <code>400</code> (bad request)</td>
+      <td>❌ Non</td>
+      <td>La requête est invalide, retenter est inutile</td>
+    </tr>
+    <tr>
+      <td>Erreur <code>401</code> (non authentifié)</td>
+      <td>❌ Non (sauf refresh token)</td>
+      <td>Credentials invalides, retenter identiquement est inutile</td>
+    </tr>
+    <tr>
+      <td>Timeout sur <code>POST /payment</code></td>
+      <td>⚠️ Dangereux !</td>
+      <td>Le serveur a peut-être traité la requête → double paiement !</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-piege">
+    <div class="callout-title">⚠️ Piège classique — Retry Storm</div>
+    Si un service tombe et que 1000 clients retentent tous en même temps, le service reçoit un pic de charge dès qu'il redémarre et retombe immédiatement. C'est l'<strong>amplification par retry</strong>. Solutions : backoff + jitter + circuit breaker.
+  </div>
+
+  <h3>C.3 — Backoff exponentiel + jitter</h3>
+
+  <p>Le <strong>backoff exponentiel</strong> consiste à augmenter le délai entre chaque retry :</p>
+
+  <pre>
+délai = min(base_delay × 2^tentative, max_delay)
+
+Exemple avec base_delay = 1s, max_delay = 30s :
+  Tentative 0 → 1s
+  Tentative 1 → 2s
+  Tentative 2 → 4s
+  Tentative 3 → 8s
+  Tentative 4 → 16s
+  Tentative 5 → 30s (plafonné)
+</pre>
+
+  <p>Le <strong>jitter</strong> ajoute un composant aléatoire pour éviter que tous les clients retentent au même instant :</p>
+
+  <pre>
+délai_final = délai × random(0.5, 1.5)
+
+Ou "full jitter" :
+délai_final = random(0, délai)
+</pre>
+
+  <!-- Figure 2: Backoff/Retry Timeline -->
+  <div class="figure-container">
+    <svg width="780" height="200" viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg">
+      <text x="390" y="20" text-anchor="middle" font-weight="bold" font-size="14" fill="#1a237e">Timeline — Backoff exponentiel avec jitter</text>
+
+      <!-- Axe temps -->
+      <line x1="40" y1="110" x2="740" y2="110" stroke="#616161" stroke-width="2" marker-end="url(#arrowGray)"/>
+      <text x="750" y="115" font-size="11" fill="#616161">t (s)</text>
+
+      <!-- Échecs -->
+      <circle cx="80" cy="110" r="8" fill="#c62828" stroke="#b71c1c" stroke-width="2"/>
+      <text x="80" y="95" text-anchor="middle" font-size="10" fill="#c62828" font-weight="bold">❌ R1</text>
+      <text x="80" y="135" text-anchor="middle" font-size="9" fill="#616161">t=0</text>
+
+      <line x1="88" y1="110" x2="150" y2="110" stroke="#f9a825" stroke-width="3" stroke-dasharray="6,3"/>
+      <text x="119" y="155" text-anchor="middle" font-size="9" fill="#f9a825">~1s</text>
+
+      <circle cx="160" cy="110" r="8" fill="#c62828" stroke="#b71c1c" stroke-width="2"/>
+      <text x="160" y="95" text-anchor="middle" font-size="10" fill="#c62828" font-weight="bold">❌ R2</text>
+      <text x="160" y="135" text-anchor="middle" font-size="9" fill="#616161">t≈1s</text>
+
+      <line x1="168" y1="110" x2="270" y2="110" stroke="#f9a825" stroke-width="3" stroke-dasharray="6,3"/>
+      <text x="219" y="155" text-anchor="middle" font-size="9" fill="#f9a825">~2.3s (jitter)</text>
+
+      <circle cx="280" cy="110" r="8" fill="#c62828" stroke="#b71c1c" stroke-width="2"/>
+      <text x="280" y="95" text-anchor="middle" font-size="10" fill="#c62828" font-weight="bold">❌ R3</text>
+      <text x="280" y="135" text-anchor="middle" font-size="9" fill="#616161">t≈3.3s</text>
+
+      <line x1="288" y1="110" x2="440" y2="110" stroke="#f9a825" stroke-width="3" stroke-dasharray="6,3"/>
+      <text x="364" y="155" text-anchor="middle" font-size="9" fill="#f9a825">~4.7s (jitter)</text>
+
+      <circle cx="450" cy="110" r="8" fill="#c62828" stroke="#b71c1c" stroke-width="2"/>
+      <text x="450" y="95" text-anchor="middle" font-size="10" fill="#c62828" font-weight="bold">❌ R4</text>
+      <text x="450" y="135" text-anchor="middle" font-size="9" fill="#616161">t≈8s</text>
+
+      <line x1="458" y1="110" x2="640" y2="110" stroke="#f9a825" stroke-width="3" stroke-dasharray="6,3"/>
+      <text x="549" y="155" text-anchor="middle" font-size="9" fill="#f9a825">~9.2s (jitter)</text>
+
+      <!-- Succès -->
+      <circle cx="650" cy="110" r="10" fill="#2e7d32" stroke="#1b5e20" stroke-width="2"/>
+      <text x="650" y="92" text-anchor="middle" font-size="10" fill="#2e7d32" font-weight="bold">✅ R5</text>
+      <text x="650" y="135" text-anchor="middle" font-size="9" fill="#616161">t≈17s</text>
+
+      <text x="390" y="185" text-anchor="middle" font-size="11" fill="#616161">Délais croissants : 1s → 2s → 4s → 8s (+ variation aléatoire)</text>
+
+      <defs>
+        <marker id="arrowGray" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#616161"/></marker>
+      </defs>
+    </svg>
+    <div class="figure-caption">Figure 2 — Timeline d'un backoff exponentiel avec jitter : chaque retry attend de plus en plus longtemps, avec une variation aléatoire.</div>
+  </div>
+
+  <h3>C.4 — Circuit Breaker (concept)</h3>
+
+  <p>Le <strong>circuit breaker</strong> est un pattern inspiré de l'électricité : quand un service échoue trop souvent, le « disjoncteur » s'ouvre et les requêtes sont immédiatement rejetées <em>sans même être envoyées</em>. Cela protège le service malade et évite l'effet cascade.</p>
+
+  <!-- Figure 3: Circuit Breaker -->
+  <div class="figure-container">
+    <svg width="750" height="280" viewBox="0 0 750 280" xmlns="http://www.w3.org/2000/svg">
+      <text x="375" y="22" text-anchor="middle" font-weight="bold" font-size="14" fill="#1a237e">Circuit Breaker — Trois états</text>
+
+      <!-- CLOSED -->
+      <rect x="30" y="60" width="180" height="100" rx="12" fill="#e8f5e9" stroke="#2e7d32" stroke-width="3"/>
+      <text x="120" y="95" text-anchor="middle" font-weight="bold" font-size="15" fill="#2e7d32">🟢 FERMÉ</text>
+      <text x="120" y="115" text-anchor="middle" font-size="11" fill="#2e7d32">(CLOSED)</text>
+      <text x="120" y="138" text-anchor="middle" font-size="10" fill="#424242">Requêtes passent</text>
+      <text x="120" y="152" text-anchor="middle" font-size="10" fill="#424242">normalement</text>
+
+      <!-- OPEN -->
+      <rect x="290" y="60" width="180" height="100" rx="12" fill="#ffebee" stroke="#c62828" stroke-width="3"/>
+      <text x="380" y="95" text-anchor="middle" font-weight="bold" font-size="15" fill="#c62828">🔴 OUVERT</text>
+      <text x="380" y="115" text-anchor="middle" font-size="11" fill="#c62828">(OPEN)</text>
+      <text x="380" y="138" text-anchor="middle" font-size="10" fill="#424242">Requêtes rejetées</text>
+      <text x="380" y="152" text-anchor="middle" font-size="10" fill="#424242">immédiatement (fail fast)</text>
+
+      <!-- HALF-OPEN -->
+      <rect x="545" y="60" width="180" height="100" rx="12" fill="#fff3e0" stroke="#e65100" stroke-width="3"/>
+      <text x="635" y="95" text-anchor="middle" font-weight="bold" font-size="15" fill="#e65100">🟡 SEMI-OUVERT</text>
+      <text x="635" y="115" text-anchor="middle" font-size="11" fill="#e65100">(HALF-OPEN)</text>
+      <text x="635" y="138" text-anchor="middle" font-size="10" fill="#424242">Test : une requête</text>
+      <text x="635" y="152" text-anchor="middle" font-size="10" fill="#424242">passe pour vérifier</text>
+
+      <!-- Transitions -->
+      <path d="M 210 90 Q 250 50 290 90" stroke="#c62828" stroke-width="2" fill="none" marker-end="url(#arrowRed)"/>
+      <text x="250" y="45" text-anchor="middle" font-size="9" fill="#c62828">N échecs consécutifs</text>
+
+      <path d="M 470 90 Q 510 50 545 90" stroke="#e65100" stroke-width="2" fill="none" marker-end="url(#arrowOrange2)"/>
+      <text x="508" y="45" text-anchor="middle" font-size="9" fill="#e65100">après timeout</text>
+
+      <path d="M 635 160 Q 635 220 120 220 Q 60 220 60 160" stroke="#2e7d32" stroke-width="2" fill="none" marker-end="url(#arrowGreen2)"/>
+      <text x="350" y="240" text-anchor="middle" font-size="9" fill="#2e7d32">✅ Test réussi → on referme</text>
+
+      <path d="M 635 160 Q 700 220 500 250 Q 380 260 380 160" stroke="#c62828" stroke-width="2" fill="none" marker-end="url(#arrowRed)" stroke-dasharray="5,3"/>
+      <text x="560" y="265" text-anchor="middle" font-size="9" fill="#c62828">❌ Test échoué → reste ouvert</text>
+
+      <defs>
+      <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#c62828"/></marker>
+      <marker id="arrowOrange2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#e65100"/></marker>
+      <marker id="arrowGreen2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2e7d32"/></marker>
+    </defs>
+  </svg>
+  <div class="figure-caption">Figure 3 — Circuit Breaker : trois états (Fermé → Ouvert → Semi-ouvert) et leurs transitions.</div>
+</div>
+
+<div class="callout callout-retenir">
+  <div class="callout-title">📌 À retenir</div>
+  Le circuit breaker <strong>protège le système globalement</strong> : il évite de surcharger un service déjà en difficulté, libère les ressources du client et permet une reprise progressive via l'état semi-ouvert.
+</div>
+
+<h3>C.5 — Bulkhead et Fallback (concepts)</h3>
+
+<p><strong>Bulkhead (cloison étanche) :</strong> Inspiré des cloisons de navires, ce pattern isole les différents appels de service dans des « compartiments » séparés (pools de threads/connexions distincts). Si le service A est lent, il ne consomme pas les ressources allouées au service B.</p>
+
+<p><strong>Fallback (repli) :</strong> Quand un appel échoue (même après retries), le système fournit une réponse dégradée plutôt qu'une erreur brute. Exemples :</p>
+<ul>
+  <li>Retourner des données en cache (même périmées)</li>
+  <li>Retourner une valeur par défaut</li>
+  <li>Rediriger vers un service de secours</li>
+  <li>Informer l'utilisateur clairement (« Service temporairement indisponible, réessayez dans 5 minutes »)</li>
+</ul>
+
+<h3>C.6 — Tableau récapitulatif : problèmes réseau et réponses</h3>
+
+<table>
+  <tr>
+    <th>Problème réseau</th>
+    <th>Symptôme</th>
+    <th>Réponse recommandée</th>
+    <th>Risque si mal géré</th>
+  </tr>
+  <tr>
+    <td>Service lent</td>
+    <td>Latence élevée, timeouts fréquents</td>
+    <td>Timeout + backoff + circuit breaker</td>
+    <td>Effet cascade, blocage de threads</td>
+  </tr>
+  <tr>
+    <td>Service intermittent</td>
+    <td>Erreurs 503 aléatoires</td>
+    <td>Retry avec backoff + jitter</td>
+    <td>Retry storm si pas de jitter</td>
+  </tr>
+  <tr>
+    <td>Service en panne totale</td>
+    <td>Connexion refusée / timeout immédiat</td>
+    <td>Circuit breaker + fallback</td>
+    <td>Cascade de pannes sur tous les appelants</td>
+  </tr>
+  <tr>
+    <td>Réseau partitionné</td>
+    <td>Certains nœuds joignables, d'autres non</td>
+    <td>Détection + basculement + logs</td>
+    <td>Split-brain, incohérences de données</td>
+  </tr>
+  <tr>
+    <td>Duplication de requêtes</td>
+    <td>Actions exécutées deux fois</td>
+    <td>Idempotency key + déduplication serveur</td>
+    <td>Double paiement, données corrompues</td>
+  </tr>
+  <tr>
+    <td>Surcharge (rate limit)</td>
+    <td>Erreurs 429</td>
+    <td>Respecter <code>Retry-After</code>, backoff</td>
+    <td>Bannissement temporaire / permanent</td>
+  </tr>
+  <tr>
+    <td>Désordre des messages</td>
+    <td>Événements traités dans le mauvais ordre</td>
+    <td>Numéros de séquence, timestamps, buffers</td>
+    <td>État incohérent</td>
+  </tr>
+</table>
+</section>
+
+<!-- ==================== COURS PARTIE D ==================== -->
+<section id="cours-d">
+<h2>D — Observabilité minimale <span class="badge badge-concept">Concept</span></h2>
+
+<h3>D.1 — Le problème du debug distribué</h3>
+
+<p>En local, on peut poser un breakpoint, lire un fichier de log, reproduire le bug. En distribué, tout change :</p>
+
+<table>
+  <tr>
+    <th>Aspect</th>
+    <th>Debug local</th>
+    <th>Debug distribué</th>
+  </tr>
+  <tr>
+    <td><strong>Reproduction</strong></td>
+    <td>Facile (même machine, même état)</td>
+    <td>Très difficile (état réparti, timing, charge)</td>
+  </tr>
+  <tr>
+    <td><strong>Logs</strong></td>
+    <td>Un seul fichier, chronologique</td>
+    <td>N fichiers sur N machines, horloges désynchronisées</td>
+  </tr>
+  <tr>
+    <td><strong>Causalité</strong></td>
+    <td>Ordre d'exécution clair</td>
+    <td>Appels entre services, concurrence, race conditions</td>
+  </tr>
+  <tr>
+    <td><strong>Outils</strong></td>
+    <td>Debugger, print, log local</td>
+    <td>Tracing distribué, métriques, alertes, correlation IDs</td>
+  </tr>
+</table>
+
+<h3>D.2 — Les trois piliers de l'observabilité</h3>
+
+<h4>Logs structurés</h4>
+<p>Plutôt que <code>print("Erreur !")</code>, utilisez des logs structurés en JSON qui incluent un contexte riche :</p>
+
+<pre>
+{
+"timestamp": "2026-03-09T14:32:01.234Z",
+"level": "ERROR",
+"service": "document-service",
+"request_id": "req-a1b2c3d4",
+"user_id": "user-42",
+"method": "POST",
+"path": "/api/v1/documents",
+"status": 500,
+"duration_ms": 342,
+"error": "DatabaseConnectionError: timeout after 5000ms",
+"trace_id": "trace-xyz-789"
+}
+</pre>
+
+<p>Le champ <code>request_id</code> (ou <code>correlation_id</code>) est <strong>crucial</strong> : il permet de suivre une requête utilisateur à travers tous les services qu'elle traverse.</p>
+
+<h4>Traces distribuées</h4>
+<p>Une <strong>trace</strong> représente le parcours complet d'une requête à travers le système. Chaque service ajoute un <strong>span</strong> (segment) à la trace. Cela permet de visualiser :</p>
+<ul>
+  <li>Quel service a été appelé, dans quel ordre</li>
+  <li>Combien de temps chaque service a pris</li>
+  <li>Où se situe le goulot d'étranglement</li>
+</ul>
+
+<pre>
+┌─ Trace: req-a1b2c3d4 ───────────────────────────────────────────┐
+│                                                                  │
+│  [API Gateway]  ──── 12ms ────┐                                  │
+│                                │                                  │
+│       [Auth Service]  ── 3ms ──┘── 45ms ────┐                    │
+│                                              │                    │
+│            [Document Service]  ── 280ms ─────┘                    │
+│                   │                                               │
+│                   └── [Database Query] ── 250ms (⚠️ lent !)      │
+│                                                                  │
+└──────────────── Durée totale : 342ms ────────────────────────────┘
+</pre>
+
+<h4>Métriques</h4>
+<p>Les métriques sont des mesures numériques agrégées dans le temps. Les plus importantes pour les APIs :</p>
+<ul>
+  <li><strong>Latence</strong> : temps de réponse — mesurée en percentiles (p50, p95, p99)
+    <ul>
+      <li>p50 = 50% des requêtes sont plus rapides que cette valeur (médiane)</li>
+      <li>p95 = 95% des requêtes sont plus rapides</li>
+      <li>p99 = 99% des requêtes sont plus rapides (les « queues » de distribution)</li>
+    </ul>
+  </li>
+  <li><strong>Taux d'erreur</strong> : pourcentage de réponses 5xx</li>
+  <li><strong>Débit</strong> : requêtes par seconde (RPS)</li>
+  <li><strong>Saturation</strong> : utilisation CPU, mémoire, connexions DB</li>
+</ul>
+
+<div class="callout callout-exemple">
+  <div class="callout-title">💡 Exemple concret</div>
+  « Notre API a un p50 de 45ms mais un p99 de 2.3s. » Cela signifie que la plupart des requêtes sont rapides, mais 1% met plus de 2 secondes. Ce 1% peut représenter des milliers d'utilisateurs mécontents par jour. On ne peut pas se contenter de la moyenne !
+</div>
+
+<div class="callout callout-retenir">
+  <div class="callout-title">📌 À retenir</div>
+  <strong>Bonnes pratiques d'observabilité :</strong>
+  <ul>
+    <li>Générer un <code>X-Request-Id</code> dès l'entrée et le propager à chaque service</li>
+    <li>Logger en JSON structuré (jamais en texte libre non parsable)</li>
+    <li>Mesurer la latence en percentiles, pas en moyenne</li>
+    <li>Alerter sur les anomalies (taux d'erreur > 1%, p99 > seuil)</li>
+    <li>Ne jamais logger de données sensibles (mots de passe, tokens, numéros de carte)</li>
+  </ul>
+</div>
+</section>
+
+<!-- ==================== COURS PARTIE E ==================== -->
+<section id="cours-e">
+<h2>E — Implications cybersécurité des APIs <span class="badge badge-sec">Sécurité</span></h2>
+
+<h3>E.1 — AuthN vs AuthZ : clarification fondamentale</h3>
+
+<table>
+  <tr>
+    <th>Concept</th>
+    <th>Authentification (AuthN)</th>
+    <th>Autorisation (AuthZ)</th>
+  </tr>
+  <tr>
+    <td><strong>Question</strong></td>
+    <td><em>« Qui es-tu ? »</em></td>
+    <td><em>« As-tu le droit de faire ça ? »</em></td>
+  </tr>
+  <tr>
+    <td><strong>Mécanisme</strong></td>
+    <td>Login/mot de passe, token, certificat</td>
+    <td>Rôles (RBAC), attributs (ABAC), politiques</td>
+  </tr>
+  <tr>
+    <td><strong>Échec</strong></td>
+    <td>Code <code>401 Unauthorized</code></td>
+    <td>Code <code>403 Forbidden</code></td>
+  </tr>
+  <tr>
+    <td><strong>Analogie</strong></td>
+    <td>Montrer son badge à l'entrée</td>
+    <td>Le badge donne accès au 2e étage, pas au 5e</td>
+  </tr>
+  <tr>
+    <td><strong>Ordre</strong></td>
+    <td>Toujours en premier</td>
+    <td>Après l'authentification</td>
+  </tr>
+</table>
+
+<h3>E.2 — Gestion des secrets</h3>
+
+<p>Un <strong>secret</strong> est toute donnée qui, si elle est divulguée, compromet la sécurité du système : clés API, mots de passe de base de données, clés de chiffrement, tokens de service.</p>
+
+<table>
+  <tr>
+    <th>Pratique</th>
+    <th>❌ Mauvais</th>
+    <th>✅ Bon</th>
+  </tr>
+  <tr>
+    <td><strong>Stockage</strong></td>
+    <td>En dur dans le code source</td>
+    <td>Variables d'environnement ou vault sécurisé</td>
+  </tr>
+  <tr>
+    <td><strong>Versioning</strong></td>
+    <td>Commité dans Git</td>
+    <td>Exclu via <code>.gitignore</code>, injecté à l'exécution</td>
+  </tr>
+  <tr>
+    <td><strong>Rotation</strong></td>
+    <td>Jamais changé depuis 3 ans</td>
+    <td>Rotation régulière (90 jours max), automatisée</td>
+  </tr>
+  <tr>
+    <td><strong>Accès</strong></td>
+    <td>Même token pour tous les services</td>
+    <td>Un token par service, principe du moindre privilège</td>
+  </tr>
+  <tr>
+    <td><strong>Logging</strong></td>
+    <td>Token dans les logs applicatifs</td>
+    <td>Masqué / jamais loggé</td>
+  </tr>
+</table>
+
+<h3>E.3 — Panorama des attaques sur les APIs</h3>
+
+<table>
+  <tr>
+    <th>Menace</th>
+    <th>Impact</th>
+    <th>Indices de détection</th>
+    <th>Contre-mesure</th>
+  </tr>
+  <tr>
+    <td><strong>MITM</strong> (Man-in-the-Middle)</td>
+    <td>Interception et modification des données en transit</td>
+    <td>Certificats invalides, alertes TLS, données altérées</td>
+    <td>TLS/HTTPS obligatoire, certificate pinning</td>
+  </tr>
+  <tr>
+    <td><strong>Replay attack</strong></td>
+    <td>Rejouer une requête légitime pour duplicer une action</td>
+    <td>Actions dupliquées, timestamps incohérents</td>
+    <td>Nonces, timestamps + fenêtre de validité, idempotency keys</td>
+  </tr>
+  <tr>
+    <td><strong>Injection JSON</strong></td>
+    <td>Injecter des données malveillantes dans les payloads</td>
+    <td>Champs inattendus, caractères spéciaux, erreurs de parsing</td>
+    <td>Validation stricte d'entrée, whitelisting des champs</td>
+  </tr>
+  <tr>
+    <td><strong>Brute force</strong></td>
+    <td>Deviner credentials par essais massifs</td>
+    <td>Volume anormal de 401, mêmes endpoints auth</td>
+    <td>Rate limiting, verrouillage progressif, CAPTCHA</td>
+  </tr>
+  <tr>
+    <td><strong>DDoS applicatif</strong></td>
+    <td>Saturer le service avec des requêtes légitimes coûteuses</td>
+    <td>Pic de charge, latence explosive, CPU 100%</td>
+    <td>Rate limiting, pagination forcée, circuit breaker</td>
+  </tr>
+  <tr>
+    <td><strong>SSRF</strong> (Server-Side Request Forgery)</td>
+    <td>Forcer le serveur à faire des requêtes vers des services internes</td>
+    <td>Requêtes vers localhost, IPs privées, métadonnées cloud</td>
+    <td>Validation d'URL, blocage des IPs internes, DNS rebinding protection</td>
+  </tr>
+  <tr>
+    <td><strong>Enumeration</strong></td>
+    <td>Découvrir des ressources existantes (users, documents)</td>
+    <td>Parcours séquentiel d'IDs, timing differences</td>
+    <td>UUIDs au lieu d'IDs séquentiels, réponses uniformes (timing constant)</td>
+  </tr>
+  <tr>
+    <td><strong>Token theft</strong></td>
+    <td>Vol de token d'authentification</td>
+    <td>Utilisation depuis des IPs/geos inhabituelles</td>
+    <td>Expiration courte, refresh tokens, binding IP/device</td>
+  </tr>
+</table>
+
+<h3>E.4 — Modèles d'autorisation : RBAC vs ABAC</h3>
+
+<table>
+  <tr>
+    <th>Modèle</th>
+    <th>Principe</th>
+    <th>Exemple</th>
+    <th>Usage idéal</th>
+  </tr>
+  <tr>
+    <td><strong>RBAC</strong> (Role-Based Access Control)</td>
+    <td>Les permissions sont attribuées à des <em>rôles</em>, les utilisateurs reçoivent des rôles</td>
+    <td>Rôle « éditeur » → peut créer/modifier des documents</td>
+    <td>Systèmes avec rôles bien définis et stables</td>
+  </tr>
+  <tr>
+    <td><strong>ABAC</strong> (Attribute-Based Access Control)</td>
+    <td>Les permissions dépendent d'<em>attributs</em> (user, ressource, contexte)</td>
+    <td>« Un utilisateur du département RH peut accéder aux fiches du département RH pendant les heures de bureau »</td>
+    <td>Systèmes avec règles complexes et contextuelles</td>
+  </tr>
+</table>
+
+<div class="callout callout-secu">
+  <div class="callout-title">🔒 Point cybersécurité : pourquoi « internal network » ≠ confiance</div>
+  <p>Une erreur <strong>très courante</strong> est de considérer que les communications entre services internes n'ont pas besoin de sécurité : « c'est sur notre réseau privé, donc c'est sûr ».</p>
+  <p>C'est <strong>faux</strong> pour de multiples raisons :</p>
+  <ul>
+    <li><strong>Mouvement latéral</strong> : un attaquant qui compromet un service peut pivoter vers tous les autres services « de confiance »</li>
+    <li><strong>Insider threat</strong> : un employé malveillant ou négligent a accès au réseau interne</li>
+    <li><strong>Supply chain</strong> : une dépendance compromise peut envoyer des requêtes internes malveillantes</li>
+    <li><strong>Erreur de configuration</strong> : un service interne exposé par erreur sur Internet</li>
+  </ul>
+  <p><strong>Principe Zero Trust</strong> : vérifier <em>chaque</em> requête, même interne. Authentifier les services entre eux (mTLS, tokens de service), valider les entrées, appliquer le moindre privilège.</p>
+</div>
+
+<h3>E.5 — Rate Limiting</h3>
+
+<p>Le <strong>rate limiting</strong> limite le nombre de requêtes qu'un client peut effectuer dans une fenêtre de temps donnée. C'est à la fois un mécanisme de <strong>fiabilité</strong> (protéger le serveur) et de <strong>sécurité</strong> (empêcher le brute force et le DDoS).</p>
+
+<table>
+  <tr>
+    <th>Algorithme</th>
+    <th>Principe</th>
+    <th>Avantage</th>
+  </tr>
+  <tr>
+    <td><strong>Fixed window</strong></td>
+    <td>Compteur remis à zéro toutes les N secondes</td>
+    <td>Simple à implémenter</td>
+  </tr>
+  <tr>
+    <td><strong>Sliding window</strong></td>
+    <td>Fenêtre glissante (pas de reset brutal)</td>
+    <td>Plus lisse, moins d'effets de bord</td>
+  </tr>
+  <tr>
+    <td><strong>Token bucket</strong></td>
+    <td>Un seau se remplit à débit constant ; chaque requête consomme un token</td>
+    <td>Permet des bursts contrôlés</td>
+  </tr>
+</table>
+
+<p>Headers standard à retourner quand le rate limit est atteint :</p>
+<pre>
+HTTP/1.1 429 Too Many Requests
+Retry-After: 30
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1741531800
+</pre>
+</section>
+
+<!-- ==================== LIVE CODING ==================== -->
+<section id="live-coding">
+<h2>Live coding Python (45 min) <span class="badge badge-api">API</span> <span class="badge badge-fiab">Fiabilité</span></h2>
+
+<p>Trois mini-exemples commentés ligne par ligne. On utilise uniquement la <strong>bibliothèque standard Python</strong> (<code>http.server</code>, <code>urllib</code>, <code>json</code>, <code>time</code>, <code>random</code>).</p>
+
+<h3>Exemple 1 — Mini API HTTP avec <code>http.server</code></h3>
+
+<p>Ce serveur expose deux endpoints : <code>GET /health</code> et <code>POST /documents</code>. Il gère les codes d'erreur 400, 401, 404 et 500.</p>
+
+<pre>
+<span class="code-keyword">import</span> json
+<span class="code-keyword">import</span> uuid
+<span class="code-keyword">from</span> http.server <span class="code-keyword">import</span> HTTPServer, BaseHTTPRequestHandler
+<span class="code-keyword">from</span> datetime <span class="code-keyword">import</span> datetime
+
+<span class="code-comment"># ── Stockage en mémoire (simulation d'une base de données) ──</span>
+documents_db = {}
+
+<span class="code-comment"># ── Token attendu (en production : JAMAIS en dur !) ──</span>
+VALID_TOKEN = <span class="code-string">"secret-token-abc123"</span>
+
+
+<span class="code-keyword">class</span> <span class="code-func">APIHandler</span>(BaseHTTPRequestHandler):
+  <span class="code-string">"""Gestionnaire de requêtes HTTP pour notre mini API."""</span>
+
+  <span class="code-keyword">def</span> <span class="code-func">_send_json</span>(self, status_code, data):
+      <span class="code-string">"""Envoie une réponse JSON avec le code de statut donné."""</span>
+      self.send_response(status_code)                <span class="code-comment"># Code HTTP (200, 400…)</span>
+      self.send_header(<span class="code-string">"Content-Type"</span>,
+                       <span class="code-string">"application/json"</span>)        <span class="code-comment"># Type MIME</span>
+      self.end_headers()                             <span class="code-comment"># Fin des headers</span>
+      self.wfile.write(                              <span class="code-comment"># Écriture du body</span>
+          json.dumps(data).encode(<span class="code-string">"utf-8"</span>)
+      )
+
+  <span class="code-keyword">def</span> <span class="code-func">_check_auth</span>(self):
+      <span class="code-string">"""Vérifie le header Authorization. Retourne True si valide."""</span>
+      auth = self.headers.get(<span class="code-string">"Authorization"</span>, <span class="code-string">""</span>)
+      <span class="code-comment"># Format attendu : "Bearer secret-token-abc123"</span>
+      <span class="code-keyword">if</span> auth != f<span class="code-string">"Bearer {VALID_TOKEN}"</span>:
+          self._send_json(<span class="code-number">401</span>, {
+              <span class="code-string">"error"</span>: <span class="code-string">"unauthorized"</span>,
+              <span class="code-string">"message"</span>: <span class="code-string">"Token manquant ou invalide"</span>
+          })
+          <span class="code-keyword">return False</span>
+      <span class="code-keyword">return True</span>
+
+  <span class="code-comment"># ── GET ────────────────────────────────────────────────────</span>
+  <span class="code-keyword">def</span> <span class="code-func">do_GET</span>(self):
+      <span class="code-comment"># Endpoint de santé : pas d'auth nécessaire</span>
+      <span class="code-keyword">if</span> self.path == <span class="code-string">"/health"</span>:
+          self._send_json(<span class="code-number">200</span>, {
+              <span class="code-string">"status"</span>: <span class="code-string">"ok"</span>,
+              <span class="code-string">"timestamp"</span>: datetime.utcnow().isoformat(),
+              <span class="code-string">"documents_count"</span>: len(documents_db)
+          })
+          <span class="code-keyword">return</span>
+
+      <span class="code-comment"># Tout autre GET → 404</span>
+      self._send_json(<span class="code-number">404</span>, {
+          <span class="code-string">"error"</span>: <span class="code-string">"not_found"</span>,
+          <span class="code-string">"message"</span>: f<span class="code-string">"Endpoint {self.path} inconnu"</span>
+      })
+
+  <span class="code-comment"># ── POST ───────────────────────────────────────────────────</span>
+  <span class="code-keyword">def</span> <span class="code-func">do_POST</span>(self):
+      <span class="code-keyword">if</span> self.path != <span class="code-string">"/documents"</span>:
+          self._send_json(<span class="code-number">404</span>, {
+              <span class="code-string">"error"</span>: <span class="code-string">"not_found"</span>,
+              <span class="code-string">"message"</span>: f<span class="code-string">"Endpoint {self.path} inconnu"</span>
+          })
+          <span class="code-keyword">return</span>
+
+      <span class="code-comment"># ① Vérifier l'authentification</span>
+      <span class="code-keyword">if not</span> self._check_auth():
+          <span class="code-keyword">return</span>
+
+      <span class="code-comment"># ② Lire et parser le body JSON</span>
+      content_length = int(
+          self.headers.get(<span class="code-string">"Content-Length"</span>, <span class="code-number">0</span>)
+      )
+      <span class="code-keyword">if</span> content_length == <span class="code-number">0</span>:
+          self._send_json(<span class="code-number">400</span>, {
+              <span class="code-string">"error"</span>: <span class="code-string">"bad_request"</span>,
+              <span class="code-string">"message"</span>: <span class="code-string">"Corps de requête vide"</span>
+          })
+          <span class="code-keyword">return</span>
+
+      <span class="code-keyword">try</span>:
+          raw_body = self.rfile.read(content_length)
+          body = json.loads(raw_body)
+      <span class="code-keyword">except</span> json.JSONDecodeError:
+          self._send_json(<span class="code-number">400</span>, {
+              <span class="code-string">"error"</span>: <span class="code-string">"bad_request"</span>,
+              <span class="code-string">"message"</span>: <span class="code-string">"JSON invalide"</span>
+          })
+          <span class="code-keyword">return</span>
+
+      <span class="code-comment"># ③ Validation des champs</span>
+      title = body.get(<span class="code-string">"title"</span>, <span class="code-string">""</span>).strip()
+      content = body.get(<span class="code-string">"content"</span>, <span class="code-string">""</span>).strip()
+
+      <span class="code-keyword">if not</span> title <span class="code-keyword">or not</span> content:
+          self._send_json(<span class="code-number">400</span>, {
+              <span class="code-string">"error"</span>: <span class="code-string">"validation_error"</span>,
+              <span class="code-string">"message"</span>: <span class="code-string">"'title' et 'content' sont requis"</span>
+          })
+          <span class="code-keyword">return</span>
+
+      <span class="code-keyword">if</span> len(title) > <span class="code-number">200</span>:
+          self._send_json(<span class="code-number">400</span>, {
+              <span class="code-string">"error"</span>: <span class="code-string">"validation_error"</span>,
+              <span class="code-string">"message"</span>: <span class="code-string">"'title' ne doit pas dépasser 200 caractères"</span>
+          })
+          <span class="code-keyword">return</span>
+
+      <span class="code-comment"># ④ Créer le document</span>
+      doc_id = str(uuid.uuid4())
+      documents_db[doc_id] = {
+          <span class="code-string">"id"</span>: doc_id,
+          <span class="code-string">"title"</span>: title,
+          <span class="code-string">"content"</span>: content,
+          <span class="code-string">"created_at"</span>: datetime.utcnow().isoformat()
+      }
+
+      <span class="code-comment"># ⑤ Répondre 201 Created</span>
+      self._send_json(<span class="code-number">201</span>, documents_db[doc_id])
+
+  <span class="code-comment"># Supprimer les logs de requête par défaut (trop verbeux)</span>
+  <span class="code-keyword">def</span> <span class="code-func">log_message</span>(self, format, *args):
+      <span class="code-keyword">pass</span>
+
+
+<span class="code-keyword">if</span> __name__ == <span class="code-string">"__main__"</span>:
+  server = HTTPServer((<span class="code-string">"127.0.0.1"</span>, <span class="code-number">8080</span>), APIHandler)
+  print(<span class="code-string">"Serveur démarré sur http://127.0.0.1:8080"</span>)
+  server.serve_forever()
+</pre>
+
+<div class="callout callout-retenir">
+  <div class="callout-title">📌 À retenir</div>
+  Ce serveur illustre les bonnes pratiques : validation d'entrée systématique, codes d'erreur appropriés (400/401/404), réponse JSON structurée, authentification par token. En production, on utiliserait un framework (Flask, FastAPI) et un vrai système d'auth.
+</div>
+
+<h3>Exemple 2 — Client Python (<code>urllib</code>) avec timeout et <code>X-Request-Id</code></h3>
+
+<pre>
+<span class="code-keyword">import</span> json
+<span class="code-keyword">import</span> uuid
+<span class="code-keyword">from</span> urllib.request <span class="code-keyword">import</span> Request, urlopen
+<span class="code-keyword">from</span> urllib.error <span class="code-keyword">import</span> HTTPError, URLError
+
+
+<span class="code-keyword">def</span> <span class="code-func">api_request</span>(method, url, data=<span class="code-keyword">None</span>, token=<span class="code-keyword">None</span>,
+              timeout=<span class="code-number">10</span>):
+  <span class="code-string">"""
+  Effectue une requête HTTP vers l'API.
+  - method  : "GET" ou "POST"
+  - url     : URL complète de l'endpoint
+  - data    : dict Python (sera converti en JSON)
+  - token   : token d'authentification
+  - timeout : durée max en secondes (défaut : 10s)
+  Retourne : (status_code, response_dict)
+  """</span>
+
+  <span class="code-comment"># ── Préparer le body JSON si nécessaire ──</span>
+  body_bytes = <span class="code-keyword">None</span>
+  <span class="code-keyword">if</span> data <span class="code-keyword">is not None</span>:
+      body_bytes = json.dumps(data).encode(<span class="code-string">"utf-8"</span>)
+
+  <span class="code-comment"># ── Construire la requête ──</span>
+  req = Request(url, data=body_bytes, method=method)
+  req.add_header(<span class="code-string">"Content-Type"</span>,
+                 <span class="code-string">"application/json"</span>)
+
+  <span class="code-comment"># ── Ajouter un identifiant unique de requête ──</span>
+  <span class="code-comment"># Permet la traçabilité dans les logs du serveur</span>
+  request_id = str(uuid.uuid4())
+  req.add_header(<span class="code-string">"X-Request-Id"</span>, request_id)
+  print(f<span class="code-string">"[{request_id[:8]}] {method} {url}"</span>)
+
+  <span class="code-comment"># ── Ajouter le token si fourni ──</span>
+  <span class="code-keyword">if</span> token:
+      req.add_header(<span class="code-string">"Authorization"</span>,
+                     f<span class="code-string">"Bearer {token}"</span>)
+
+  <span class="code-comment"># ── Envoyer avec timeout ──</span>
+  <span class="code-keyword">try</span>:
+      <span class="code-keyword">with</span> urlopen(req, timeout=timeout) <span class="code-keyword">as</span> resp:
+          body = json.loads(resp.read().decode(<span class="code-string">"utf-8"</span>))
+          print(f<span class="code-string">"  ✅ {resp.status}"</span>)
+          <span class="code-keyword">return</span> resp.status, body
+
+  <span class="code-keyword">except</span> HTTPError <span class="code-keyword">as</span> e:
+      <span class="code-comment"># Erreur HTTP (4xx, 5xx) : lire le body d'erreur</span>
+      error_body = {}
+      <span class="code-keyword">try</span>:
+          error_body = json.loads(
+              e.read().decode(<span class="code-string">"utf-8"</span>)
+          )
+      <span class="code-keyword">except</span> Exception:
+          <span class="code-keyword">pass</span>
+      print(f<span class="code-string">"  ❌ HTTP {e.code}: {error_body}"</span>)
+      <span class="code-keyword">return</span> e.code, error_body
+
+  <span class="code-keyword">except</span> URLError <span class="code-keyword">as</span> e:
+      <span class="code-comment"># Erreur réseau (connexion refusée, DNS, timeout…)</span>
+      print(f<span class="code-string">"  🔌 Erreur réseau: {e.reason}"</span>)
+      <span class="code-keyword">return None</span>, {<span class="code-string">"error"</span>: str(e.reason)}
+
+
+<span class="code-comment"># ── Exemples d'utilisation ──</span>
+<span class="code-keyword">if</span> __name__ == <span class="code-string">"__main__"</span>:
+  BASE = <span class="code-string">"http://127.0.0.1:8080"</span>
+  TOKEN = <span class="code-string">"secret-token-abc123"</span>
+
+  <span class="code-comment"># GET /health (pas d'auth)</span>
+  status, data = api_request(<span class="code-string">"GET"</span>, f<span class="code-string">"{BASE}/health"</span>)
+
+  <span class="code-comment"># POST /documents (avec auth + données)</span>
+  status, data = api_request(
+      <span class="code-string">"POST"</span>,
+      f<span class="code-string">"{BASE}/documents"</span>,
+      data={<span class="code-string">"title"</span>: <span class="code-string">"Mon doc"</span>, <span class="code-string">"content"</span>: <span class="code-string">"Contenu…"</span>},
+      token=TOKEN,
+      timeout=<span class="code-number">5</span>
+  )
+
+  <span class="code-comment"># POST sans auth → doit retourner 401</span>
+  status, data = api_request(
+      <span class="code-string">"POST"</span>,
+      f<span class="code-string">"{BASE}/documents"</span>,
+      data={<span class="code-string">"title"</span>: <span class="code-string">"Test"</span>, <span class="code-string">"content"</span>: <span class="code-string">"X"</span>}
+  )
+</pre>
+
+<div class="callout callout-exemple">
+  <div class="callout-title">💡 Exemple concret — Le <code>X-Request-Id</code></div>
+  Le client génère un UUID unique pour chaque requête et l'envoie via le header <code>X-Request-Id</code>. Le serveur le loggue. Si un problème survient, on peut <strong>retrouver la requête précise</strong> dans les logs de tous les services traversés. C'est le principe du <strong>correlation ID</strong>.
+</div>
+
+<h3>Exemple 3 — Retry avec backoff exponentiel</h3>
+
+<pre>
+<span class="code-keyword">import</span> time
+<span class="code-keyword">import</span> random
+
+
+<span class="code-keyword">def</span> <span class="code-func">request_with_retry</span>(
+  func,                       <span class="code-comment"># fonction appelant l'API</span>
+  max_retries=<span class="code-number">4</span>,              <span class="code-comment"># nombre max de tentatives</span>
+  base_delay=<span class="code-number">1.0</span>,             <span class="code-comment"># délai initial (secondes)</span>
+  max_delay=<span class="code-number">30.0</span>,             <span class="code-comment"># délai maximum (plafond)</span>
+  retryable_statuses=(<span class="code-number">500</span>, <span class="code-number">502</span>, <span class="code-number">503</span>, <span class="code-number">504</span>)
+):
+  <span class="code-string">"""
+  Appelle func() avec retry + backoff exponentiel + jitter.
+
+  func() doit retourner (status_code, response_body).
+  On ne retente QUE sur les codes de statut « retryables ».
+  Les erreurs 4xx ne sont JAMAIS retentées (sauf 429).
+  """</span>
+
+  <span class="code-keyword">for</span> attempt <span class="code-keyword">in</span> range(max_retries + <span class="code-number">1</span>):
+
+      status, body = func()
+
+      <span class="code-comment"># ── Succès → retourner immédiatement ──</span>
+      <span class="code-keyword">if</span> status <span class="code-keyword">is not None and</span> status < <span class="code-number">500</span> \
+              <span class="code-keyword">and</span> status != <span class="code-number">429</span>:
+          <span class="code-keyword">return</span> status, body
+
+      <span class="code-comment"># ── Rate limited (429) → respecter Retry-After ──</span>
+      <span class="code-keyword">if</span> status == <span class="code-number">429</span>:
+          <span class="code-comment"># En production, lire le header Retry-After</span>
+          wait = <span class="code-number">30.0</span>
+          print(f<span class="code-string">"  ⏳ Rate limited. Attente {wait}s…"</span>)
+          time.sleep(wait)
+          <span class="code-keyword">continue</span>
+
+      <span class="code-comment"># ── Dernière tentative atteinte → abandonner ──</span>
+      <span class="code-keyword">if</span> attempt == max_retries:
+          print(f<span class="code-string">"  💀 Abandon après {max_retries+1} tentatives"</span>)
+          <span class="code-keyword">return</span> status, body
+
+      <span class="code-comment"># ── Calculer le délai de backoff exponentiel ──</span>
+      delay = min(base_delay * (<span class="code-number">2</span> ** attempt), max_delay)
+
+      <span class="code-comment"># ── Ajouter du jitter (variation aléatoire) ──</span>
+      <span class="code-comment"># "Full jitter" : valeur entre 0 et delay</span>
+      jittered_delay = random.uniform(<span class="code-number">0</span>, delay)
+
+      print(
+          f<span class="code-string">"  🔄 Tentative {attempt+1}/{max_retries} "</span>
+          f<span class="code-string">"échouée (status={status}). "</span>
+          f<span class="code-string">"Retry dans {jittered_delay:.1f}s…"</span>
+      )
+      time.sleep(jittered_delay)
+
+  <span class="code-keyword">return</span> status, body
+
+
+<span class="code-comment"># ── Exemple d'utilisation ──</span>
+<span class="code-keyword">if</span> __name__ == <span class="code-string">"__main__"</span>:
+
+  <span class="code-comment"># On crée une closure pour passer les paramètres</span>
+  <span class="code-keyword">def</span> <span class="code-func">call_health</span>():
+      <span class="code-keyword">return</span> api_request(<span class="code-string">"GET"</span>,
+                         <span class="code-string">"http://127.0.0.1:8080/health"</span>,
+                         timeout=<span class="code-number">5</span>)
+
+  status, body = request_with_retry(call_health)
+  print(f<span class="code-string">"Résultat final : {status} → {body}"</span>)
+</pre>
+
+<div class="callout callout-piege">
+  <div class="callout-title">⚠️ Piège classique — Retry sur opérations non idempotentes</div>
+  <p>Le code ci-dessus est sûr pour des <code>GET</code> (lecture, idempotent). Mais <strong>ne retentez JAMAIS aveuglément</strong> un <code>POST /payment</code> ou <code>POST /orders</code> sans mécanisme d'idempotence.</p>
+  <p>Avant de retry un POST, demandez-vous :</p>
+  <ul>
+    <li>Le serveur supporte-t-il un <code>Idempotency-Key</code> ?</li>
+    <li>La requête a-t-elle réellement échoué, ou est-ce seulement la <em>réponse</em> qui s'est perdue ?</li>
+    <li>Puis-je d'abord vérifier l'état (GET) avant de retenter ?</li>
+  </ul>
+  <p>En cas de doute : <strong>ne pas retenter</strong>, remonter l'erreur et laisser l'humain décider.</p>
+</div>
+</section>
+
+<!-- ==================== FIGURE 4: FLUX CLIENT → API → SERVICES ==================== -->
+<section id="figure-flux">
+<h2>Architecture : flux Client → API → Services <span class="badge badge-api">API</span> <span class="badge badge-sec">Sécurité</span></h2>
+
+<div class="figure-container">
+  <svg width="820" height="380" viewBox="0 0 820 380" xmlns="http://www.w3.org/2000/svg">
+    <text x="410" y="22" text-anchor="middle" font-weight="bold" font-size="14" fill="#1a237e">Figure 4 — Flux : Client → API Gateway → Services internes</text>
+
+    <!-- Client -->
+    <rect x="20" y="120" width="120" height="70" rx="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="2"/>
+    <text x="80" y="148" text-anchor="middle" font-size="13" fill="#1565c0" font-weight="bold">🖥 Client</text>
+    <text x="80" y="168" text-anchor="middle" font-size="10" fill="#1565c0">timeout + retry</text>
+    <text x="80" y="182" text-anchor="middle" font-size="10" fill="#1565c0">X-Request-Id</text>
+
+    <!-- TLS -->
+    <rect x="160" y="135" width="60" height="40" rx="5" fill="#fce4ec" stroke="#c62828" stroke-width="1.5"/>
+    <text x="190" y="158" text-anchor="middle" font-size="10" fill="#c62828" font-weight="bold">🔒 TLS</text>
+
+    <!-- API Gateway -->
+    <rect x="240" y="100" width="150" height="110" rx="10" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+    <text x="315" y="125" text-anchor="middle" font-size="13" fill="#e65100" font-weight="bold">API Gateway</text>
+    <text x="315" y="145" text-anchor="middle" font-size="9" fill="#424242">• AuthN (token)</text>
+    <text x="315" y="159" text-anchor="middle" font-size="9" fill="#424242">• Rate limiting</text>
+    <text x="315" y="173" text-anchor="middle" font-size="9" fill="#424242">• Validation entrée</text>
+    <text x="315" y="187" text-anchor="middle" font-size="9" fill="#424242">• Routing</text>
+    <text x="315" y="201" text-anchor="middle" font-size="9" fill="#424242">• Audit log</text>
+
+    <!-- Flèches client → gateway -->
+    <line x1="140" y1="145" x2="160" y2="150" stroke="#1565c0" stroke-width="2" marker-end="url(#arrowBlue4)"/>
+    <line x1="220" y1="150" x2="240" y2="150" stroke="#c62828" stroke-width="2" marker-end="url(#arrowRed4)"/>
+
+    <!-- Services internes -->
+    <rect x="460" y="50" width="140" height="55" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+    <text x="530" y="73" text-anchor="middle" font-size="12" fill="#2e7d32" font-weight="bold">Auth Service</text>
+    <text x="530" y="92" text-anchor="middle" font-size="9" fill="#424242">login, verify token</text>
+
+    <rect x="460" y="130" width="140" height="55" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+    <text x="530" y="153" text-anchor="middle" font-size="12" fill="#2e7d32" font-weight="bold">Document Svc</text>
+    <text x="530" y="172" text-anchor="middle" font-size="9" fill="#424242">CRUD documents</text>
+
+    <rect x="460" y="210" width="140" height="55" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+    <text x="530" y="233" text-anchor="middle" font-size="12" fill="#2e7d32" font-weight="bold">Search Service</text>
+    <text x="530" y="252" text-anchor="middle" font-size="9" fill="#424242">indexation, query</text>
+
+    <!-- Flèches gateway → services -->
+    <line x1="390" y1="130" x2="460" y2="78" stroke="#e65100" stroke-width="1.5" marker-end="url(#arrowOrange4)"/>
+    <line x1="390" y1="155" x2="460" y2="155" stroke="#e65100" stroke-width="1.5" marker-end="url(#arrowOrange4)"/>
+    <line x1="390" y1="180" x2="460" y2="235" stroke="#e65100" stroke-width="1.5" marker-end="url(#arrowOrange4)"/>
+
+    <!-- Database -->
+    <rect x="670" y="130" width="120" height="55" rx="8" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="2"/>
+    <text x="730" y="153" text-anchor="middle" font-size="12" fill="#6a1b9a" font-weight="bold">💾 Database</text>
+    <text x="730" y="172" text-anchor="middle" font-size="9" fill="#424242">persistence</text>
+
+    <line x1="600" y1="157" x2="670" y2="157" stroke="#6a1b9a" stroke-width="1.5" marker-end="url(#arrowPurple4)"/>
+
+    <!-- Légende sécurité -->
+    <rect x="20" y="280" width="780" height="80" rx="8" fill="#fce4ec" stroke="#c62828" stroke-width="1" stroke-dasharray="5,3"/>
+    <text x="410" y="302" text-anchor="middle" font-size="11" fill="#c62828" font-weight="bold">🔒 Points de contrôle sécurité</text>
+    <text x="130" y="325" text-anchor="middle" font-size="10" fill="#424242">① TLS en transit</text>
+    <text x="315" y="325" text-anchor="middle" font-size="10" fill="#424242">② AuthN + AuthZ au gateway</text>
+    <text x="530" y="325" text-anchor="middle" font-size="10" fill="#424242">③ Validation par service</text>
+    <text x="730" y="325" text-anchor="middle" font-size="10" fill="#424242">④ Chiffrement au repos</text>
+    <text x="410" y="350" text-anchor="middle" font-size="10" fill="#c62828">⑤ Audit logs à chaque couche &nbsp;&nbsp; ⑥ Rate limiting au gateway &nbsp;&nbsp; ⑦ mTLS entre services (Zero Trust)</text>
+
+    <defs>
+      <marker id="arrowBlue4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#1565c0"/></marker>
+      <marker id="arrowRed4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#c62828"/></marker>
+      <marker id="arrowOrange4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#e65100"/></marker>
+      <marker id="arrowPurple4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#6a1b9a"/></marker>
+    </defs>
+  </svg>
+  <div class="figure-caption">Figure 4 — Architecture typique : le client traverse TLS, puis l'API Gateway (auth, rate limit, validation, routing), qui distribue aux micro-services internes.</div>
+</div>
+</section>
+
+<!-- ==================== TP GUIDÉ ==================== -->
+<section id="tp">
+<h2>TP Guidé (90 min) — Fil rouge : Système de Gestion Documentaire Distribué <span class="badge badge-api">API</span> <span class="badge badge-fiab">Fiabilité</span> <span class="badge badge-sec">Sécurité</span></h2>
+
+<p><strong>Contexte :</strong> Vous continuez la conception du système de gestion documentaire distribué commencé en séance 5. L'architecture de base est définie (services auth, documents, search). L'objectif de ce TP est d'ajouter les couches <strong>API (contrat)</strong>, <strong>fiabilité (politiques client)</strong> et <strong>sécurité (premières mesures)</strong>.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">📋 Rappel de l'architecture (séance 5)</div>
+  Le système est composé de trois services : <strong>Auth Service</strong> (authentification / gestion de tokens), <strong>Document Service</strong> (CRUD documents), <strong>Search Service</strong> (indexation et recherche). Un <strong>API Gateway</strong> sert de point d'entrée unique pour les clients externes.
+</div>
+
+<!-- TP 6.1 -->
+<h3>TP 6.1 — Spécification d'API (contrat)</h3>
+
+<p><strong>Objectif :</strong> Définir le contrat d'API complet pour chaque service du système documentaire.</p>
+
+<h4>Consignes</h4>
+<ul>
+  <li>Identifier les endpoints minimum nécessaires pour chaque service :
+    <ul>
+      <li><strong>Auth :</strong> login, verify token, logout</li>
+      <li><strong>Documents :</strong> upload (create), list, get by id, update, delete</li>
+      <li><strong>Search :</strong> query (recherche textuelle)</li>
+    </ul>
+  </li>
+  <li>Pour chaque endpoint, définir :
+    <ul>
+      <li>La méthode HTTP appropriée</li>
+      <li>L'URL (avec versioning <code>/api/v1/…</code>)</li>
+      <li>Le payload JSON d'entrée (avec types et contraintes)</li>
+      <li>Le payload JSON de sortie (cas succès)</li>
+      <li>Les codes d'erreur possibles et leur signification</li>
+      <li>Les mesures de sécurité applicables</li>
+    </ul>
+  </li>
+  <li>Se demander pour chaque endpoint : <em>est-il idempotent ?</em> Si non, comment le rendre safe face aux retries ?</li>
+  <li>Prévoir la pagination pour les endpoints de type « liste »</li>
+  <li>Documenter les headers requis (<code>Authorization</code>, <code>Content-Type</code>, <code>X-Request-Id</code>)</li>
+</ul>
+
+<h4>Livrable attendu : tableau « Contrat d'API »</h4>
+
+<p><em>Modèle à compléter :</em></p>
+<table>
+  <tr>
+    <th>Endpoint</th>
+    <th>Méthode</th>
+    <th>Entrée (JSON)</th>
+    <th>Sortie (JSON)</th>
+    <th>Erreurs</th>
+    <th>Idempotent ?</th>
+    <th>Sécurité</th>
+  </tr>
+  <tr>
+    <td><code>/api/v1/auth/login</code></td>
+    <td><code>POST</code></td>
+    <td><code>{"username": str, "password": str}</code></td>
+    <td><code>{"token": str, "expires_at": str}</code></td>
+    <td>400 (champs manquants), 401 (credentials invalides), 429 (brute force)</td>
+    <td>⚠️ Non (génère un token)</td>
+    <td>Rate limiting strict, TLS, pas de message « user inexistant » vs « mauvais mdp »</td>
+  </tr>
+  <tr>
+    <td><code>/api/v1/auth/verify</code></td>
+    <td><code>GET</code></td>
+    <td>Header: <code>Authorization: Bearer &lt;token&gt;</code></td>
+    <td><code>{"valid": bool, "user_id": str, "roles": [str]}</code></td>
+    <td>401 (token invalide/expiré)</td>
+    <td>✅ Oui</td>
+    <td>Utilisé par les autres services (inter-service)</td>
+  </tr>
+  <tr>
+    <td><code>/api/v1/documents</code></td>
+    <td><code>POST</code></td>
+    <td><code>{"title": str, "content": str, "tags": [str]}</code></td>
+    <td><code>{"id": str, "title": str, "created_at": str}</code></td>
+    <td>400 (validation), 401, 403, 413 (trop gros)</td>
+    <td>❌ Non → prévoir <code>Idempotency-Key</code></td>
+    <td>AuthN + AuthZ (rôle éditeur+), validation stricte, taille max</td>
+    </tr>
+    <tr>
+      <td><code>/api/v1/documents</code></td>
+      <td><code>GET</code></td>
+      <td>Query params: <code>page, per_page, sort, order, tag</code></td>
+      <td><code>{"data": [...], "total": int, "page": int, "per_page": int}</code></td>
+      <td>400 (params invalides), 401</td>
+      <td>✅ Oui</td>
+      <td>AuthN, pagination forcée (max 100)</td>
+    </tr>
+    <tr>
+      <td><code>/api/v1/documents/{id}</code></td>
+      <td><code>GET</code></td>
+      <td>Path param: <code>id</code> (UUID)</td>
+      <td><code>{"id": str, "title": str, "content": str, …}</code></td>
+      <td>401, 403, 404</td>
+      <td>✅ Oui</td>
+      <td>AuthN + AuthZ (propriétaire ou rôle lecteur)</td>
+    </tr>
+    <tr>
+      <td><code>/api/v1/documents/{id}</code></td>
+      <td><code>PUT</code></td>
+      <td><code>{"title": str, "content": str, "tags": [str]}</code></td>
+      <td><code>{"id": str, "title": str, "updated_at": str}</code></td>
+      <td>400, 401, 403, 404, 409 (conflit version)</td>
+      <td>✅ Oui</td>
+      <td>AuthN + AuthZ (propriétaire ou éditeur)</td>
+    </tr>
+    <tr>
+      <td><code>/api/v1/documents/{id}</code></td>
+      <td><code>DELETE</code></td>
+      <td>Path param: <code>id</code> (UUID)</td>
+      <td><code>204 No Content</code></td>
+      <td>401, 403, 404</td>
+      <td>✅ Oui</td>
+      <td>AuthN + AuthZ (propriétaire ou admin), audit log</td>
+    </tr>
+    <tr>
+      <td><code>/api/v1/search</code></td>
+      <td><code>GET</code></td>
+      <td>Query params: <code>q, page, per_page, tag, date_from, date_to</code></td>
+      <td><code>{"results": [...], "total": int, "page": int}</code></td>
+      <td>400 (query vide), 401, 429</td>
+      <td>✅ Oui</td>
+      <td>AuthN, rate limiting (requêtes coûteuses), résultats filtrés par AuthZ</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-piege">
+    <div class="callout-title">⚠️ Piège classique — Enumeration d'IDs</div>
+    Si les IDs de documents sont séquentiels (<code>1, 2, 3…</code>), un attaquant peut facilement deviner les IDs existants et tenter d'accéder à des documents d'autres utilisateurs. <strong>Utilisez des UUIDs v4</strong> (aléatoires, non prédictibles) pour les identifiants de ressources.
+  </div>
+
+  <!-- TP 6.2 -->
+  <h3>TP 6.2 — Fiabilité côté client (scénarios)</h3>
+
+  <p><strong>Objectif :</strong> Définir les politiques de fiabilité pour le client du système documentaire et analyser trois scénarios de panne.</p>
+
+  <h4>Consignes</h4>
+  <ul>
+    <li>Pour chaque service appelé (auth, documents, search), proposer :
+      <ul>
+        <li>Un <strong>timeout</strong> adapté (justifier la valeur)</li>
+        <li>Une politique de <strong>retry</strong> (nombre max, quels codes retenter)</li>
+        <li>Un <strong>backoff</strong> (base delay, max delay, jitter oui/non)</li>
+        <li>Un mécanisme d'<strong>idempotency key</strong> si pertinent</li>
+      </ul>
+    </li>
+    <li>Analyser les trois scénarios ci-dessous en remplissant le tableau livrable</li>
+    <li>Pour chaque scénario, expliquer :
+      <ul>
+        <li>Quel est le <strong>risque</strong> pour l'utilisateur et le système ?</li>
+        <li>Quelle <strong>politique</strong> appliquer pour atténuer ce risque ?</li>
+        <li>Pourquoi cette politique est-elle la bonne ? (justification technique)</li>
+      </ul>
+    </li>
+    <li>Identifier les situations où un <strong>fallback</strong> est possible (donnée en cache, réponse dégradée)</li>
+  </ul>
+
+  <h4>Scénarios à analyser</h4>
+
+  <table>
+    <tr>
+      <th>Scénario</th>
+      <th>Description détaillée</th>
+    </tr>
+    <tr>
+      <td><strong>S1 — Latence élevée</strong></td>
+      <td>Le Document Service répond en 8 à 15 secondes au lieu des 200ms habituelles. La base de données est surchargée. Le client attend et l'utilisateur voit un spinner qui tourne.</td>
+    </tr>
+    <tr>
+      <td><strong>S2 — Serveur intermittent</strong></td>
+      <td>Le Search Service retourne des erreurs <code>503</code> une requête sur trois. Il est en cours de déploiement (rolling update). Les deux autres requêtes fonctionnent normalement.</td>
+    </tr>
+    <tr>
+      <td><strong>S3 — Duplication de requêtes</strong></td>
+      <td>Un utilisateur clique deux fois rapidement sur « Créer un document ». Le réseau est lent : la première requête <code>POST /documents</code> n'a pas encore reçu de réponse quand la deuxième part. Résultat : deux documents identiques sont créés.</td>
+    </tr>
+  </table>
+
+  <h4>Livrable attendu : tableau « Scénario → Politique »</h4>
+
+  <p><em>Modèle à compléter pour chaque scénario :</em></p>
+  <table>
+    <tr>
+      <th>Scénario</th>
+      <th>Risque principal</th>
+      <th>Politique appliquée</th>
+      <th>Justification</th>
+    </tr>
+    <tr>
+      <td>S1 — Latence élevée</td>
+      <td><em>(à compléter)</em></td>
+      <td><em>(à compléter)</em></td>
+      <td><em>(à compléter)</em></td>
+    </tr>
+    <tr>
+      <td>S2 — Serveur intermittent</td>
+      <td><em>(à compléter)</em></td>
+      <td><em>(à compléter)</em></td>
+      <td><em>(à compléter)</em></td>
+    </tr>
+    <tr>
+      <td>S3 — Duplication de requêtes</td>
+      <td><em>(à compléter)</em></td>
+      <td><em>(à compléter)</em></td>
+      <td><em>(à compléter)</em></td>
+    </tr>
+  </table>
+
+  <div class="callout callout-exemple">
+    <div class="callout-title">💡 Exemple concret — Politiques recommandées par service</div>
+    <table>
+      <tr>
+        <th>Service</th>
+        <th>Timeout</th>
+        <th>Max retries</th>
+        <th>Base delay</th>
+        <th>Codes retryables</th>
+        <th>Idempotency key ?</th>
+      </tr>
+      <tr>
+        <td>Auth (login)</td>
+        <td>5s</td>
+        <td>1</td>
+        <td>1s</td>
+        <td>502, 503, 504</td>
+        <td>Non (pas de side effect critique)</td>
+      </tr>
+      <tr>
+        <td>Auth (verify)</td>
+        <td>3s</td>
+        <td>2</td>
+        <td>0.5s</td>
+        <td>502, 503, 504</td>
+        <td>Non (GET idempotent)</td>
+      </tr>
+      <tr>
+        <td>Documents (GET)</td>
+        <td>10s</td>
+        <td>2</td>
+        <td>1s</td>
+        <td>500, 502, 503, 504</td>
+        <td>Non (lecture)</td>
+      </tr>
+      <tr>
+        <td>Documents (POST)</td>
+        <td>15s</td>
+        <td>0 (pas de retry auto !)</td>
+        <td>—</td>
+        <td>—</td>
+        <td><strong>Oui</strong> (UUID côté client)</td>
+      </tr>
+      <tr>
+        <td>Search (query)</td>
+        <td>8s</td>
+        <td>2</td>
+        <td>1s</td>
+        <td>502, 503</td>
+        <td>Non (lecture)</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- TP 6.3 -->
+  <h3>TP 6.3 — Sécurité API : modèle minimal</h3>
+
+  <p><strong>Objectif :</strong> Définir les premières mesures de sécurité pour l'API du système documentaire, en identifiant les surfaces d'attaque et les contrôles nécessaires.</p>
+
+  <h4>Consignes</h4>
+  <ul>
+    <li>Définir un mécanisme simple de token :
+      <ul>
+        <li>Comment le token est-il généré ? (random, signé, durée de vie)</li>
+        <li>Comment est-il transmis ? (header <code>Authorization: Bearer …</code>)</li>
+        <li>Comment est-il vérifié ? (appel au Auth Service ou vérification locale si signé)</li>
+        <li>Comment est-il invalidé ? (logout, expiration, révocation)</li>
+      </ul>
+    </li>
+    <li>Identifier où placer les contrôles de sécurité :
+      <ul>
+        <li><strong>Validation d'entrée</strong> : à quel niveau ? (gateway, service, les deux ?)</li>
+        <li><strong>Rate limiting</strong> : quels endpoints ? quels seuils ?</li>
+        <li><strong>Audit logs</strong> : quels événements logger ? (login, échecs, suppressions, accès admin)</li>
+      </ul>
+    </li>
+    <li>Cartographier les trois surfaces d'exposition :
+      <ul>
+        <li><strong>API publique</strong> : endpoints exposés aux clients finaux via le gateway</li>
+        <li><strong>Inter-services</strong> : communications entre auth, documents, search</li>
+        <li><strong>Admin</strong> : endpoints de gestion (création d'utilisateurs, stats, purge)</li>
+      </ul>
+    </li>
+    <li>Pour chaque surface, identifier les menaces principales et proposer des contrôles</li>
+  </ul>
+
+  <h4>Livrable attendu : matrice « Surface → Menace → Contrôle »</h4>
+
+  <p><em>Modèle à compléter :</em></p>
+  <table>
+    <tr>
+      <th>Surface</th>
+      <th>Menace principale</th>
+      <th>Contrôle proposé</th>
+      <th>Priorité</th>
+    </tr>
+    <tr>
+      <td>API publique — <code>/auth/login</code></td>
+      <td>Brute force sur credentials</td>
+      <td>Rate limiting (5 tentatives/min/IP), verrouillage progressif, logs</td>
+      <td>🔴 Critique</td>
+    </tr>
+    <tr>
+      <td>API publique — <code>/documents</code> (POST)</td>
+      <td>Injection JSON, upload malveillant</td>
+      <td>Validation stricte, taille max, Content-Type vérifié</td>
+      <td>🔴 Critique</td>
+    </tr>
+    <tr>
+      <td>API publique — <code>/search</code></td>
+      <td>DDoS applicatif (requêtes coûteuses)</td>
+      <td>Rate limiting, pagination obligatoire, timeout serveur</td>
+      <td>🟠 Élevée</td>
+    </tr>
+    <tr>
+      <td>API publique — tous endpoints</td>
+      <td>MITM, interception de tokens</td>
+      <td>TLS obligatoire, HSTS</td>
+      <td>🔴 Critique</td>
+    </tr>
+    <tr>
+      <td>Inter-services — auth ↔ documents</td>
+      <td>Mouvement latéral, usurpation de service</td>
+      <td>mTLS (mutual TLS) ou tokens de service</td>
+      <td>🟠 Élevée</td>
+    </tr>
+    <tr>
+      <td>Inter-services — tous</td>
+      <td>Replay de requêtes internes</td>
+      <td>Nonces + timestamps + fenêtre de validité</td>
+      <td>🟡 Moyenne</td>
+    </tr>
+    <tr>
+      <td>Admin — gestion utilisateurs</td>
+      <td>Accès non autorisé, élévation de privilèges</td>
+      <td>AuthZ stricte (rôle admin uniquement), MFA, audit log renforcé</td>
+      <td>🔴 Critique</td>
+    </tr>
+    <tr>
+      <td>Admin — endpoints de stats / debug</td>
+      <td>Fuite d'informations sensibles</td>
+      <td>Non exposés en production ou protégés par réseau + auth</td>
+      <td>🟠 Élevée</td>
+    </tr>
+    <tr>
+      <td><em>(à compléter par l'étudiant…)</em></td>
+      <td><em>…</em></td>
+      <td><em>…</em></td>
+      <td><em>…</em></td>
+    </tr>
+  </table>
+</section>
+
+<!-- ==================== LAB SÉCURITÉ ==================== -->
+<section id="lab-secu">
+  <h2>Lab Sécurité (15–20 min) <span class="badge badge-sec">Sécurité</span></h2>
+
+  <h3>Mini Threat Modeling — STRIDE léger</h3>
+
+  <p><strong>STRIDE</strong> est un modèle de catégorisation des menaces développé par Microsoft. Chaque lettre représente un type de menace :</p>
+
+  <table>
+    <tr>
+      <th>Lettre</th>
+      <th>Menace</th>
+      <th>Question à se poser</th>
+      <th>Exemple sur notre API</th>
+    </tr>
+    <tr>
+      <td><strong>S</strong></td>
+      <td>Spoofing (usurpation d'identité)</td>
+      <td>Quelqu'un peut-il se faire passer pour un autre ?</td>
+      <td>Voler un token pour accéder aux documents d'un autre utilisateur</td>
+    </tr>
+    <tr>
+      <td><strong>T</strong></td>
+      <td>Tampering (falsification)</td>
+      <td>Quelqu'un peut-il modifier des données en transit ou au repos ?</td>
+      <td>Modifier le contenu d'un document pendant la transmission (sans TLS)</td>
+    </tr>
+    <tr>
+      <td><strong>R</strong></td>
+      <td>Repudiation (non-répudiation)</td>
+      <td>Un utilisateur peut-il nier avoir fait une action ?</td>
+      <td>Supprimer un document et nier l'avoir fait (sans audit log)</td>
+    </tr>
+    <tr>
+      <td><strong>I</strong></td>
+      <td>Information Disclosure (divulgation)</td>
+      <td>Des informations sensibles peuvent-elles fuiter ?</td>
+      <td>Messages d'erreur révélant la structure interne, stack traces en production</td>
+    </tr>
+    <tr>
+      <td><strong>D</strong></td>
+      <td>Denial of Service (déni de service)</td>
+      <td>Le service peut-il être rendu indisponible ?</td>
+      <td>Requêtes massives sur <code>/search</code>, upload de fichiers énormes</td>
+    </tr>
+    <tr>
+      <td><strong>E</strong></td>
+      <td>Elevation of Privilege (élévation de privilèges)</td>
+      <td>Un utilisateur normal peut-il obtenir des droits admin ?</td>
+      <td>Manipuler le payload pour s'attribuer le rôle « admin »</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-retenir">
+    <div class="callout-title">📌 À retenir</div>
+    STRIDE n'est pas un outil magique mais un <strong>cadre de réflexion</strong>. Pour chaque composant de votre système, passez en revue les 6 catégories et demandez-vous : « Est-ce possible ici ? Si oui, comment s'en protéger ? ». Même un exercice de 15 minutes révèle des vulnérabilités que personne n'avait envisagées.
+  </div>
+
+  <h3>Checklist « API Security Baseline »</h3>
+
+  <p>Cette checklist minimale doit être vérifiée pour <strong>chaque API mise en production</strong> :</p>
+
+  <ul class="checklist">
+    <li>TLS/HTTPS activé sur tous les endpoints (y compris internes)</li>
+    <li>Authentification requise sur tous les endpoints sauf <code>/health</code></li>
+    <li>Autorisation vérifiée pour chaque opération (pas seulement l'authentification)</li>
+    <li>Validation d'entrée sur tous les champs (type, longueur, format, whitelist)</li>
+    <li>Rate limiting configuré (endpoints auth : strict ; endpoints lecture : modéré)</li>
+    <li>Pagination forcée sur les endpoints de liste (max <code>per_page</code> côté serveur)</li>
+    <li>Messages d'erreur génériques (ne pas révéler de détails internes en production)</li>
+    <li>Pas de secrets dans le code source (tokens, mots de passe, clés)</li>
+    <li>Secrets injectés par variables d'environnement ou vault</li>
+    <li>Rotation des secrets planifiée (au moins tous les 90 jours)</li>
+    <li>Audit logs sur : login, échec login, création/suppression, accès admin</li>
+    <li>Pas de données sensibles dans les logs (tokens, mots de passe masqués)</li>
+    <li>Headers de sécurité : <code>X-Content-Type-Options: nosniff</code>, <code>X-Frame-Options</code></li>
+    <li>UUIDs pour les identifiants de ressources (pas d'IDs séquentiels)</li>
+    <li>CORS configuré de manière restrictive (pas de <code>*</code> en production)</li>
+  </ul>
+
+  <h3>Étude d'incident : « Token leaked »</h3>
+
+  <div class="callout callout-secu">
+    <div class="callout-title">🔒 Scénario d'incident</div>
+    <p>Un développeur a accidentellement commité un fichier <code>.env</code> contenant le token de service du Document Service dans le dépôt Git public. Le token donne un accès complet en lecture/écriture à tous les documents. Le commit a été poussé il y a 3 heures et un collègue vient de s'en apercevoir.</p>
+  </div>
+
+  <p><strong>Étapes de réponse à l'incident (dans l'ordre) :</strong></p>
+
+  <table>
+    <tr>
+      <th>Étape</th>
+      <th>Action</th>
+      <th>Pourquoi</th>
+    </tr>
+    <tr>
+      <td><strong>Containment immédiat</strong></td>
+      <td>Révoquer le token compromis <em>immédiatement</em> (le rendre invalide côté Auth Service)</td>
+      <td>Bloquer tout accès malveillant en cours. Chaque minute compte.</td>
+    </tr>
+    <tr>
+      <td><strong>Rotation</strong></td>
+      <td>Générer un nouveau token de service et le déployer sur le Document Service</td>
+      <td>Rétablir le fonctionnement normal avec des credentials sains</td>
+    </tr>
+    <tr>
+      <td><strong>Audit</strong></td>
+      <td>Analyser les logs d'accès des 3 dernières heures : quelles requêtes ont utilisé ce token ? Depuis quelles IPs ? Quelles actions ?</td>
+      <td>Déterminer si le token a été exploité par un tiers</td>
+    </tr>
+    <tr>
+      <td><strong>Évaluation d'impact</strong></td>
+      <td>Si des accès suspects sont détectés : identifier les données touchées, notifier les utilisateurs concernés</td>
+      <td>Obligation légale (RGPD) et éthique en cas de fuite de données</td>
+    </tr>
+    <tr>
+      <td><strong>Nettoyage</strong></td>
+      <td>Supprimer le fichier <code>.env</code> du dépôt. <strong>Attention</strong> : un simple <code>git rm</code> ne suffit pas, le secret reste dans l'historique. Utiliser <code>git filter-branch</code> ou BFG Repo-Cleaner</td>
+      <td>Le secret ne doit plus être accessible, même dans l'historique</td>
+    </tr>
+    <tr>
+      <td><strong>Prévention</strong></td>
+      <td>Ajouter <code>.env</code> au <code>.gitignore</code>. Mettre en place un outil de détection de secrets dans le CI (pre-commit hooks, scanning)</td>
+      <td>Empêcher que l'incident se reproduise</td>
+    </tr>
+    <tr>
+      <td><strong>Post-mortem</strong></td>
+      <td>Rédiger un rapport d'incident : timeline, cause racine, impact, actions correctives, leçons apprises</td>
+      <td>Culture d'amélioration continue (blameless post-mortem)</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-piege">
+    <div class="callout-title">⚠️ Piège classique</div>
+    « J'ai supprimé le commit, c'est bon. » — <strong>Non.</strong> Si le dépôt est public, des bots scannent GitHub en continu et peuvent avoir copié le secret en quelques secondes. La <strong>révocation immédiate</strong> du token est toujours la première action, avant même de nettoyer le dépôt.
+  </div>
+</section>
+
+<!-- ==================== SYNTHÈSE ==================== -->
+<section id="synthese">
+  <h2>Synthèse — À retenir en 10 points</h2>
+
+  <table>
+    <tr>
+      <th>#</th>
+      <th>Point clé</th>
+      <th>Catégorie</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>La communication synchrone (HTTP) crée un <strong>couplage temporel fort</strong> : les deux parties doivent être disponibles simultanément. Le messaging réduit ce couplage mais ajoute de la complexité.</td>
+      <td><span class="badge badge-api">API</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Une API est un <strong>contrat</strong>. Chaque endpoint doit avoir des méthodes, payloads, codes d'erreur et règles de validation documentés explicitement.</td>
+      <td><span class="badge badge-api">API</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>L'<strong>idempotence</strong> est cruciale pour la fiabilité : si une opération peut être appelée N fois sans changer le résultat, les retries sont sûrs. Sinon, utilisez des <code>Idempotency-Key</code>.</td>
+      <td><span class="badge badge-fiab">Fiabilité</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Tout appel réseau doit avoir un timeout.</strong> Sans timeout, un service lent peut bloquer et contaminer l'ensemble du système (effet cascade).</td>
+      <td><span class="badge badge-fiab">Fiabilité</span></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Les retries doivent utiliser un <strong>backoff exponentiel avec jitter</strong> pour éviter les retry storms. Ne jamais retenter aveuglément des opérations non idempotentes.</td>
+      <td><span class="badge badge-fiab">Fiabilité</span></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Le <strong>circuit breaker</strong> protège un service malade : après N échecs, les requêtes sont rejetées immédiatement (fail fast), puis un test périodique vérifie la reprise.</td>
+      <td><span class="badge badge-fiab">Fiabilité</span></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><strong>AuthN ≠ AuthZ.</strong> L'authentification vérifie l'identité (qui es-tu ?), l'autorisation vérifie les droits (as-tu le droit ?). Les deux sont nécessaires et dans cet ordre.</td>
+      <td><span class="badge badge-sec">Sécurité</span></td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>La <strong>validation d'entrée</strong> est la première ligne de défense. Toute donnée reçue de l'extérieur est potentiellement malveillante. Valider type, format, longueur, valeurs autorisées.</td>
+      <td><span class="badge badge-sec">Sécurité</span></td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td><strong>« Internal network » ≠ confiance.</strong> Le Zero Trust impose de vérifier chaque requête, même entre services internes (mouvement latéral, insider threat).</td>
+      <td><span class="badge badge-sec">Sécurité</span></td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>L'<strong>observabilité</strong> (logs structurés, traces, métriques, correlation IDs) est indispensable pour diagnostiquer les problèmes dans un système distribué. On ne peut pas debugger ce qu'on ne voit pas.</td>
+      <td><span class="badge badge-concept">Concept</span></td>
+    </tr>
+  </table>
+</section>
+
+<!-- ==================== MINI-QUIZ ==================== -->
+<section id="quiz">
+  <h2>Mini-Quiz — 10 questions + Corrigé</h2>
+
+  <!-- Q1 -->
+  <div class="quiz-question">
+    <strong>Q1.</strong> Quelle est la principale différence entre le couplage temporel d'un appel HTTP synchrone et d'un système de messaging ?
+    <ul class="quiz-options">
+      <li>L'appel HTTP est plus rapide que le messaging</li>
+      <li>En HTTP synchrone, client et serveur doivent être disponibles simultanément ; en messaging, le producteur peut envoyer même si le consommateur est absent</li>
+      <li>Le messaging ne supporte pas le JSON</li>
+      <li>L'appel HTTP ne nécessite pas de réseau</li>
+    </ul>
+  </div>
+  <div class="quiz-answer">
+    <strong>✅ Réponse : B.</strong> En communication synchrone (HTTP), le client bloque en attendant la réponse du serveur — les deux doivent être actifs au même moment (couplage temporel fort). En messaging, le producteur dépose un message dans un broker et continue ; le consommateur le traite quand il est disponible (couplage temporel faible).
+  </div>
+
+  <!-- Q2 -->
+  <div class="quiz-question">
+    <strong>Q2.</strong> Un client envoie <code>POST /api/v1/orders</code> pour créer une commande. Le réseau est lent et le client ne reçoit pas de réponse (timeout). Le client retente automatiquement la même requête. Que risque-t-il de se passer ?
+    <ul class="quiz-options">
+      <li>Rien, POST est idempotent</li>
+      <li>La commande est créée deux fois (duplication)</li>
+      <li>Le serveur rejette automatiquement la duplication</li>
+      <li>Le timeout est remis à zéro</li>
+    </ul>
+  </div>
+  <div class="quiz-answer">
+    <strong>✅ Réponse : B.</strong> <code>POST</code> n'est pas idempotent par défaut. Le serveur a potentiellement traité la première requête avec succès (mais la réponse s'est perdue). Le retry crée une deuxième commande. Solution : utiliser un <code>Idempotency-Key</code> pour que le serveur détecte la duplication.
+  </div>
+
+  <!-- Q3 -->
+  <div class="quiz-question">
+    <strong>Q3.</strong> Pourquoi le backoff exponentiel inclut-il un composant « jitter » (aléatoire) ?
+    <ul class="quiz-options">
+      <li>Pour accélérer les retries</li>
+      <li>Pour empêcher que tous les clients retentent exactement au même instant (retry storm)</li>
+      <li>Pour rendre le code plus complexe et sécurisé</li>
+      <li>Pour respecter les normes HTTP</li>
+    </ul>
+  </div>
+  <div class="quiz-answer">
+    <strong>✅ Réponse : B.</strong> Sans jitter, si 1000 clients subissent un timeout en même temps et utilisent le même backoff (1s, 2s, 4s…), ils retenteront tous au même instant, créant un pic de charge. Le jitter étale les retries dans le temps, réduisant la pression sur le serveur.
+  </div>
+
+  <!-- Q4 -->
+  <div class="quiz-question">
+    <strong>Q4.</strong> Quelle est la différence entre une erreur <code>401 Unauthorized</code> et <code>403 Forbidden</code> ?
+    <ul class="quiz-options">
+      <li>401 = authentifié mais pas autorisé ; 403 = pas authentifié</li>
+      <li>401 = pas authentifié (ou token invalide) ; 403 = authentifié mais pas les droits</li>
+      <li>401 = erreur serveur ; 403 = erreur client</li>
+      <li>Aucune différence, les deux sont interchangeables</li>
+    </ul>
+  </div>
+  <div class="quiz-answer">
+    <strong>✅ Réponse : B.</strong> <code>401</code> signifie que l'authentification a échoué ou est manquante (AuthN). <code>403</code> signifie que l'utilisateur est bien identifié mais n'a pas la permission d'effectuer l'action demandée (AuthZ).
+  </div>
+
+  <!-- Q5 -->
+  <div class="quiz-question">
+    <strong>Q5.</strong> Un circuit breaker est dans l'état « OUVERT ». Que se passe-t-il quand le client tente un appel ?
+    <ul class="quiz-options">
+      <li>La requête est envoyée normalement au serveur</li>
+      <li>La requête est mise en file d'attente</li>
+      <li>La requête est immédiatement rejetée sans être envoyée (fail fast)</li>
+      <li>La requête est envoyée en double pour vérifier</li>
+    </ul>
+  </div>
+  <div class="quiz-answer">
+    <strong>✅ Réponse : C.</strong> Quand le circuit breaker est ouvert, il court-circuite l'appel : la requête est rejetée immédiatement, sans consommer de ressources réseau. Après un délai défini, il passe en « semi-ouvert » et laisse passer une requête de test.
+  </div>
+
+  <!-- Q6 -->
+  <div class="quiz-question">
+    <strong>Q6.</strong> Pourquoi ne faut-il <em>jamais</em> retenter une erreur <code>400 Bad Request</code> ?
+    <ul class="quiz-options">
+      <li>Parce que 400 signifie que le serveur est en panne</li>
+      <li>Parce que la requête est invalide : la retenter identiquement donnera toujours le même résultat</li>
+      <li>Parce que le rate limiting l'interdit</li>
+      <li>Parce que 400 est un code de succès partiel</li>
+    </ul>
+  </div>
+  <div class="quiz-answer">
+    <strong>✅ Réponse : B.</strong> Un code <code>400</code> indique que la requête elle-même est malformée (champs manquants, format invalide). Envoyer la même requête N fois ne changera rien. Les retries ne sont utiles que pour les erreurs <em>transitoires</em> (5xx, problèmes réseau).
+  </div>
+
+  <!-- Q7 -->
+  <div class="quiz-question">
+    <strong>Q7.</strong> Qu'est-ce que le SSRF (Server-Side Request Forgery) dans le contexte d'une API ?
+    <ul class="quiz-options">
+      <li>Un type de chiffrement pour les communications internes</li>
+      <li>Une attaque où l'attaquant fait exécuter des requêtes par le serveur vers des ressources internes auxquelles il n'a pas accès directement</li>
+      <li>Un protocole de transfert de fichiers sécurisé</li>
+      <li>Un mécanisme de rate limiting</li>
+    </ul>
+  </div>
+  <div class="quiz-answer">
+    <strong>✅ Réponse : B.</strong> Le SSRF exploite un serveur qui accepte des URLs en entrée (ex : « télécharger un fichier depuis cette URL »). L'attaquant fournit une URL interne (<code>http://169.254.169.254/metadata</code> sur le cloud, ou <code>http://localhost:6379</code> pour Redis) et le serveur exécute la requête avec ses propres privilèges réseau. Contre-mesure : valider et filtrer les URLs côté serveur, bloquer les IPs privées.
+  </div>
+
+  <!-- Q8 -->
+  <div class="quiz-question">
+    <strong>Q8.</strong> Quel est le rôle d'un <code>X-Request-Id</code> (ou correlation ID) dans un système distribué ?
+    <ul class="quiz-options">
+      <li>Authentifier l'utilisateur</li>
+      <li>Chiffrer les données en transit</li>
+      <li>Permettre de suivre une requête à travers tous les services qu'elle traverse pour le debugging</li>
+      <li>Limiter le nombre de requêtes par seconde</li>
+    </ul>
+  </div>
+  <div class="quiz-answer">
+    <strong>✅ Réponse : C.</strong> Le <code>X-Request-Id</code> est un identifiant unique généré à l'entrée du système et propagé à chaque service. Il permet de retrouver dans les logs tous les traitements liés à une même requête utilisateur, ce qui est essentiel pour le debugging distribué.
+  </div>
+
+  <!-- Q9 -->
+  <div class="quiz-question">
+    <strong>Q9.</strong> Un développeur a commité un token d'API dans un dépôt Git public et s'en aperçoit 2 heures plus tard. Quelle est la <strong>première</strong> action à effectuer ?
+    <ul class="quiz-options">
+      <li>Supprimer le fichier du dépôt avec <code>git rm</code></li>
+      <li>Réécrire l'historique Git avec <code>git filter-branch</code></li>
+      <li>Révoquer (invalider) immédiatement le token compromis</li>
+      <li>Changer le mot de passe de son compte GitHub</li>
+    </ul>
+  </div>
+  <div class="quiz-answer">
+    <strong>✅ Réponse : C.</strong> La priorité absolue est de <strong>révoquer le token</strong> pour bloquer tout accès malveillant immédiat. Le nettoyage du dépôt est important mais secondaire : des bots scannent les dépôts publics en continu et peuvent avoir copié le secret en quelques secondes.
+  </div>
+
+  <!-- Q10 -->
+  <div class="quiz-question">
+    <strong>Q10.</strong> Pourquoi le principe Zero Trust considère-t-il que le « réseau interne » n'est pas suffisant comme périmètre de sécurité ?
+    <ul class="quiz-options">
+      <li>Parce que le réseau interne est toujours plus lent que l'externe</li>
+      <li>Parce qu'un attaquant ayant compromis un seul service interne peut pivoter librement vers tous les autres si aucune authentification inter-services n'est en place</li>
+      <li>Parce que le Zero Trust interdit l'utilisation de réseaux privés</li>
+      <li>Parce que les firewalls sont obsolètes</li>
+    </ul>
+  </div>
+  <div class="quiz-answer">
+    <strong>✅ Réponse : B.</strong> Le modèle de sécurité périmétrique (« château fort ») suppose que tout ce qui est à l'intérieur du réseau est sûr. En réalité, un attaquant qui pénètre le périmètre (via phishing, supply chain, vulnérabilité) peut se déplacer latéralement sans obstacle. Le Zero Trust impose de vérifier <em>chaque</em> requête, même interne, avec authentification mutuelle (mTLS), autorisation et logs.
+  </div>
+</section>
+
+<!-- ==================== LIVRABLES & BARÈME ==================== -->
+<section id="livrables">
+  <h2>Livrables et Barème</h2>
+
+  <h3>Livrables à rendre</h3>
+  <table>
+    <tr>
+      <th>Livrable</th>
+      <th>Format</th>
+      <th>Contenu attendu</th>
+    </tr>
+    <tr>
+      <td><strong>L1 — Contrat d'API</strong></td>
+      <td>Tableau (document ou Markdown)</td>
+      <td>Tous les endpoints, méthodes, payloads, codes d'erreur, idempotence, mesures de sécurité</td>
+    </tr>
+    <tr>
+      <td><strong>L2 — Politiques de fiabilité</strong></td>
+      <td>Tableau + analyse de scénarios</td>
+      <td>Timeouts, retries, backoff par service + analyse des 3 scénarios (risque, politique, justification)</td>
+    </tr>
+    <tr>
+      <td><strong>L3 — Matrice de sécurité</strong></td>
+      <td>Matrice (tableau)</td>
+      <td>Surfaces × Menaces × Contrôles × Priorités pour les 3 surfaces identifiées</td>
+    </tr>
+  </table>
+
+  <h3>Barème d'évaluation</h3>
+
+  <table>
+    <tr>
+      <th>Critère</th>
+      <th>Poids</th>
+      <th>Indicateurs de qualité</th>
+    </tr>
+    <tr>
+      <td><strong>Qualité du contrat d'API</strong></td>
+      <td>
+        <span class="bareme-bar" style="width:140px; background: linear-gradient(90deg, #1565c0, #42a5f5);"></span>
+        <strong>35 %</strong>
+      </td>
+      <td>
+        <ul>
+          <li>Endpoints cohérents et complets (tous les cas d'usage couverts)</li>
+          <li>Méthodes HTTP correctes (sémantique respectée)</li>
+          <li>Codes d'erreur pertinents et différenciés</li>
+          <li>Payloads bien définis (types, contraintes, exemples)</li>
+          <li>Idempotence identifiée et gérée</li>
+          <li>Pagination et versioning documentés</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Cohérence des politiques de fiabilité</strong></td>
+      <td>
+        <span class="bareme-bar" style="width:140px; background: linear-gradient(90deg, #6a1b9a, #ab47bc);"></span>
+        <strong>35 %</strong>
+      </td>
+      <td>
+        <ul>
+          <li>Timeouts réalistes et justifiés par service</li>
+          <li>Politique de retry adaptée au type d'opération (lecture vs écriture)</li>
+          <li>Backoff + jitter correctement dimensionnés</li>
+          <li>Scénarios analysés avec rigueur (risque + politique + justification)</li>
+          <li>Situations de fallback identifiées</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Analyse de sécurité</strong></td>
+      <td>
+        <span class="bareme-bar" style="width:120px; background: linear-gradient(90deg, #c62828, #ef5350);"></span>
+        <strong>30 %</strong>
+      </td>
+      <td>
+        <ul>
+          <li>Trois surfaces d'exposition correctement cartographiées</li>
+          <li>Menaces pertinentes et réalistes identifiées</li>
+          <li>Contrôles proposés techniquement viables</li>
+          <li>Priorités cohérentes (critique vs modéré)</li>
+          <li>Mécanisme de token décrit (génération, transmission, vérification, invalidation)</li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+
+  <div class="callout callout-retenir">
+    <div class="callout-title">📌 À retenir — Critères transversaux</div>
+    <ul>
+      <li><strong>Cohérence</strong> : les trois livrables doivent être cohérents entre eux (les mesures de sécurité du L3 doivent correspondre aux annotations sécurité du L1)</li>
+      <li><strong>Justification</strong> : chaque choix doit être argumenté (pas de réponse « parce que c'est une bonne pratique »)</li>
+      <li><strong>Réalisme</strong> : les valeurs (timeouts, seuils de rate limiting, nombre de retries) doivent être réalistes pour un système de gestion documentaire</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== ANNEXE : RÉCAPITULATIF DES PATTERNS ==================== -->
+<section id="annexe">
+  <h2>Annexe — Récapitulatif des patterns de résilience</h2>
+
+  <table>
+    <tr>
+      <th>Pattern</th>
+      <th>Problème résolu</th>
+      <th>Principe</th>
+      <th>Risque si absent</th>
+      <th>Complexité</th>
+    </tr>
+    <tr>
+      <td><strong>Timeout</strong></td>
+      <td>Blocage sur service lent</td>
+      <td>Durée max d'attente, puis abandon</td>
+      <td>Famine de ressources, cascade</td>
+      <td>⭐ Faible</td>
+    </tr>
+    <tr>
+      <td><strong>Retry</strong></td>
+      <td>Erreur transitoire</td>
+      <td>Réessayer N fois après échec</td>
+      <td>Échec sur problème temporaire</td>
+      <td>⭐ Faible</td>
+    </tr>
+    <tr>
+      <td><strong>Backoff exponentiel</strong></td>
+      <td>Retry storm</td>
+      <td>Délai croissant entre retries</td>
+      <td>Surcharge du service en reprise</td>
+      <td>⭐ Faible</td>
+    </tr>
+    <tr>
+      <td><strong>Jitter</strong></td>
+      <td>Synchronisation des retries</td>
+      <td>Variation aléatoire du délai</td>
+      <td>Pics de charge simultanés</td>
+      <td>⭐ Faible</td>
+    </tr>
+    <tr>
+      <td><strong>Circuit breaker</strong></td>
+      <td>Service en panne prolongée</td>
+      <td>Coupe-circuit avec test périodique</td>
+      <td>Surcharge du service malade</td>
+      <td>⭐⭐ Moyenne</td>
+    </tr>
+    <tr>
+      <td><strong>Bulkhead</strong></td>
+      <td>Contamination entre appels</td>
+      <td>Isolation des pools de ressources</td>
+      <td>Un service lent bloque tout</td>
+      <td>⭐⭐ Moyenne</td>
+    </tr>
+    <tr>
+      <td><strong>Fallback</strong></td>
+      <td>Indisponibilité totale</td>
+      <td>Réponse dégradée (cache, défaut)</td>
+      <td>Erreur brute pour l'utilisateur</td>
+      <td>⭐⭐ Moyenne</td>
+    </tr>
+    <tr>
+      <td><strong>Idempotency key</strong></td>
+      <td>Duplication d'opérations</td>
+      <td>Clé unique détectant les doublons</td>
+      <td>Double traitement (paiement…)</td>
+      <td>⭐⭐ Moyenne</td>
+    </tr>
+    <tr>
+      <td><strong>Rate limiting</strong></td>
+      <td>Surcharge / abus</td>
+      <td>Quota de requêtes par fenêtre</td>
+      <td>DoS, brute force</td>
+      <td>⭐⭐ Moyenne</td>
+    </tr>
+  </table>
+
+  <h3>Diagramme ASCII — Flux de décision Retry</h3>
+
+<pre>
+                    ┌─────────────────┐
+                    │  Requête échoue │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │ Code d'erreur ? │
+                    └────────┬────────┘
+                             │
+            ┌────────────────┼────────────────┐
+            │                │                │
+     ┌──────▼──────┐  ┌─────▼──────┐  ┌──────▼──────┐
+     │  4xx (sauf  │  │  429 Rate  │  │  5xx / Net  │
+     │    429)     │  │  Limited   │  │   Error     │
+     └──────┬──────��  └─────┬──────┘  └──────┬──────┘
+            │               │                │
+     ┌──────▼──────┐  ┌─────▼──────┐  ┌──────▼──────┐
+     │  ❌ NE PAS  │  │  Attendre  │  │ Opération   │
+     │  RETENTER   │  │ Retry-After│  │ idempotente?│
+     │ (erreur     │  │  puis      │  └──────┬──────┘
+     │  client)    │  │  retenter  │         │
+     └─────────────┘  └────────────┘    Oui  │  Non
+                                        ┌────┴────┐
+                                   ┌────▼───┐ ┌───▼──────┐
+                                   │ Retry  │ │ ❌ NE PAS│
+                                   │ backoff│ │ RETENTER │
+                                   │+jitter │ │(ou avec  │
+                                   └────┬───┘ │idemp.key)│
+                                        │     └──────────┘
+                                   ┌────▼───────────┐
+                                   │ Max retries    │
+                                   │ atteint ?      │
+                                   └────┬───────────┘
+                                   Oui  │  Non
+                                 ┌──────┴──────┐
+                            ┌────▼────┐   ┌────▼────┐
+                            │ Abandon │   │ Attendre│
+                            │ + log   │   │ + retry │
+                            │ + alert │   └─────────┘
+                            └─────────┘
+</pre>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<section style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; text-align: center;">
+  <h2 style="color: #fff; border-bottom-color: rgba(255,255,255,0.3);">Fin de la Séance 6</h2>
+  <p style="font-size: 1.1em; margin-bottom: 8px;">
+    <span class="badge badge-api">API</span>
+    <span class="badge badge-fiab">Fiabilité</span>
+    <span class="badge badge-sec">Sécurité</span>
+  </p>
+  <p>Module : Applications Réparties et Cybersécurité — Python</p>
+  <p style="opacity: 0.8; font-size: 0.9em; margin-top: 16px;">
+    Prochaine séance : Séance 7 — Stockage distribué, cohérence et réplication
+  </p>
+</section>
+
+</div><!-- /.container -->
+</body>
+</html>
